@@ -1,0 +1,119 @@
+[
+    {
+        "id" : 1,
+        "name" : "DepartmentEmployeeChart",
+        "component" : "DepartmentEmployeePieChart",
+        "module" : "ePAD"
+    },
+    {
+        "id" : 2,
+        "name" : "RootDepartmentEmployeeChart",
+        "component" : "RootDepartmentEmployeePieChart",
+        "module" : "ePAD"
+    },
+    {
+        "id" : 3,
+        "name" : "DeviceInfoChart",
+        "component" : "DeviceInfoBarChart",
+        "module" : "ePAD"
+    },
+    {
+        "id" : 4,
+        "name" : "DeviceOfflineTimes",
+        "component" : "DeviceOfflineTimesBarChart",
+        "module" : "ePAD",
+        "dataConfig" : {
+            "warningAmountOfflinePercent" : 10,
+            "safeBackgroundColor" : "#1eb326",
+            "warningBackgroundColor" : "#cfc20c",
+            "dangerBackgroundColor" : "#d11717"
+        }
+    },
+    {
+        "id" : 5,
+        "name" : "TransferEmployeeTimes",
+        "component" : "TransferEmployeeTimesBarChart",
+        "module" : "ePAD"
+    },
+    {
+        "id" : 6,
+        "name" : "AttendanceLogTimes",
+        "component" : "AttendanceLogTimesBarChart",
+        "module" : "ePAD",
+        "dataConfig" : {
+            "safeDifferenceLogPercent" : 5,
+            "dangerDifferenceLogPercent" : 20,
+            "leaveDay" : [0,6],
+            "safeBackgroundColor" : "#1eb326",
+            "warningBackgroundColor" : "#cfc20c",
+            "dangerBackgroundColor" : "#d11717"
+        }
+    },
+    {
+        "id" : 7,
+        "name" : "DeviceLogAmount",
+        "component" : "DeviceLogAmountBarChart",
+        "module" : "ePAD",
+        "dataConfig" : {
+            "safeLogUsedPercent" : 70,
+            "dangerLogUsedPercent" : 80,
+            "safeBackgroundColor" : "#1eb326",
+            "warningBackgroundColor" : "#cfc20c",
+            "dangerBackgroundColor" : "#d11717"
+        }
+    },
+    {
+        "id" : 8,
+        "name" : "InOutLogByDoor",
+        "component" : "InOutLogByDoorBarChart",
+        "module" : "eAC"
+    },
+    {
+        "id" : 9,
+        "name" : "InOutLogByDevice",
+        "component" : "InOutLogByDeviceBarChart",
+        "module" : "eAC"
+    },
+    {
+        "id" : 10,
+        "name" : "DepartmentEmployeeChart",
+        "component" : "DepartmentEmployeePieChart",
+        "module" : "eAC"
+    },
+    {
+        "id" : 11,
+        "name" : "RootDepartmentEmployeeChart",
+        "component" : "RootDepartmentEmployeePieChart",
+        "module" : "eGCS"
+    },
+    {
+        "id" : 12,
+        "name" : "EmployeePresentByRootDepartment",
+        "component" : "EmployeePresentByRootDepartmentBarChart",
+        "module" : "eGCS"
+    },
+    {
+        "id" : 13,
+        "name" : "EmployeePresentByUserType",
+        "component" : "EmployeePresentByUserTypeBarChart",
+        "module" : "eGCS"
+    },
+    {
+        "id" : 14,
+        "name" : "EmployeePresentByAreaGroup",
+        "component" : "EmployeePresentByAreaGroupBarChart",
+        "module" : "eGCS"
+    },
+    {
+        "id" : 15,
+        "name" : "VehicleEmployeePresent",
+        "component" : "VehicleEmployeePresentBarChart",
+        "module" : "eGCS"
+    },
+    {
+        "id" : 16,
+        "name" : "EmployeePresentInFactory",
+        "component" : "EmployeePresentInFactoryBarChart",
+        "module" : "eGCS"
+    }
+]

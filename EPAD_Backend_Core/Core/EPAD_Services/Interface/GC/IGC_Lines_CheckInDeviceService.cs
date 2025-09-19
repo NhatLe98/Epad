@@ -1,0 +1,17 @@
+﻿using EPAD_Common.Services;
+using EPAD_Common.Types;
+using EPAD_Data;
+using EPAD_Data.Entities;
+using EPAD_Data.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EPAD_Services.Interface
+{
+    public interface IGC_Lines_CheckInDeviceService : IBaseServices<GC_Lines_CheckInDevice,EPAD_Context>
+    {
+        Task<List<GC_Lines_CheckInDevice>> GetDataByCompanyIndex(int companyIndex);
+    }
+}

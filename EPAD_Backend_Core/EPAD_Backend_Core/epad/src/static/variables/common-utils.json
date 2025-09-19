@@ -1,0 +1,12 @@
+{
+    "UsingBasicMenu": false,
+    "MaxDeviceNumber" :  3,
+    "ClientName":"",
+    "DashboardModule": "ePAD,eAC,eGCS",
+    "RealtimeCameraType" : "Hikvision",
+    "UsingNewAttendanceMonitoring" : true,
+    "LoadPrivilegeMenu": "",
+    "ExcludeVehicleFactoryUserMonitoring" : false,
+    "EnableChartLevelBackground" : false,
+    "EnableMasterEmployeeFilter" : true
+}

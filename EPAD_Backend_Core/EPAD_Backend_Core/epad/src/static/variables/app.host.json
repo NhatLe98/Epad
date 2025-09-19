@@ -1,0 +1,6 @@
+{
+  "Domain": "http://localhost:5000",
+  "ApiEndpoint": "api",
+  "PushNotificationUrl": "http://localhost:5003",
+  "ezHrUrl":"http://103.98.160.137:3100"
+}

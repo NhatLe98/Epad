@@ -1,0 +1,357 @@
+[
+  {
+    "group_id": "1",
+    "group_key": "Home",
+    "group_name": "Home",
+    "group_path": "home",
+    "group_icon": "home.png",
+    "group_show": true,
+    "list_menu": []
+  },
+  {
+    "group_id": "2",
+    "group_key": "DeviceManagement",
+    "group_name": "DeviceManagement",
+    "group_path": "",
+    "group_icon": "device.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "2-1",
+        "key": "Machine",
+        "name": "ListMachine",
+        "path": "machine",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-2",
+        "key": "MachineLicense",
+        "name": "MachineLicense",
+        "path": "machine-license",
+        "icon": "settings.png",
+        "show": true
+    },
+      {
+        "id": "2-3",
+        "key": "DeviceInfo",
+        "name": "DeviceInfo",
+        "path": "device-info",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-4",
+        "key": "DevicesByDepartment",
+        "name": "DevicesByDepartment",
+        "path": "device-by-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-5",
+        "key": "LogMonitoring",
+        "name": "LogMonitoringOnline",
+        "path": "log-monitoring-online",
+        "icon": "device.png",
+        "show": true
+      },
+      {
+        "id": "2-6",
+        "key": "LogRealtimeMonitoring",
+        "name": "LogRealtimeMonitoringOnline",
+        "path": "log-realtime-monitoring-online",
+        "icon": "device.png",
+        "show": true
+      },
+      {
+        "id": "2-7",
+        "key": "Service",
+        "name": "ListService",
+        "path": "service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-8",
+        "key": "DevicesByService",
+        "name": "DevicesByService",
+        "path": "device-by-service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-9",
+        "key": "ViewLogAttend",
+        "name": "ViewLogAttend",
+        "path": "view-log-attend",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-10",
+        "key": "GroupDevice",
+        "name": "GroupDevice",
+        "path": "group-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-11",
+        "key": "ListGroupDevice",
+        "name": "ListGroupDevice",
+        "path": "list-group-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-12",
+        "key": "Controller",
+        "name": "Controller",
+        "path": "controller",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-13",
+        "key": "RelayController",
+        "name": "Relay Controller",
+        "path": "relay-controller",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-14",
+        "key": "CameraControl",
+        "name": "CameraControl",
+        "path": "camera-control",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "3",
+    "group_key": "UserManagement",
+    "group_name": "UserManagement",
+    "group_path": "user-management",
+    "group_icon": "employeemanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "3-1",
+        "key": "UserManagementCentralization",
+        "name": "UserManagementCentralization",
+        "path": "user-management-centralization",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-2",
+        "key": "ChangeDepartment",
+        "name": "ChangeDepartment",
+        "path": "change-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-3",
+        "key": "ApproveChangeDepartment",
+        "name": "ApproveChangeDepartment",
+        "path": "approve-change-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-4",
+        "key": "AutoSynchUser",
+        "name": "AutoSynchUser",
+        "path": "auto-sync-user",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "3-5",
+        "key": "Department",
+        "name": "Department",
+        "path": "department",
+        "icon": "department.png",
+        "show": true
+      },
+      {
+        "id": "3-6",
+        "key": "WorkingInfo",
+        "name": "WorkingInfo",
+        "path": "working-info",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-8",
+        "key": "CardInfoManagement",
+        "name": "CardInfoManagement",
+        "path": "card-info-management",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-9",
+        "key": "PositionInfoManagement",
+        "name": "PositionInfoManagement",
+        "path": "position-info-management",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-10",
+        "key": "UserType",
+        "name": "UserType",
+        "path": "user-type",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "4",
+    "group_key": "AccountManagement",
+    "group_name": "AccountManagement",
+    "group_path": "account-management",
+    "group_icon": "usermanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "4-1",
+        "key": "LoginAccount",
+        "name": "LoginAccount",
+        "path": "login-account",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "4-2",
+        "key": "GroupAccount",
+        "name": "GroupAccount",
+        "path": "group-account",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "4-3",
+        "key": "AssignPrivilegeUserGroup",
+        "name": "AssignPrivilegeUserGroup",
+        "path": "assign-privilege",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "4-4",
+        "key": "AssignPrivilegeDevice",
+        "name": "AssignPrivilegeDevice",
+        "path": "assign-privilege-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "4-5",
+        "key": "AssignPrivilegeDepartment",
+        "name": "AssignPrivilegeDepartment",
+        "path": "assign-privilege-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+          "id": "4-6",
+          "key": "AssignPrivilegeMachineRealtime",
+          "name": "AssignPrivilegeMachineRealtime",
+          "path": "assign-privilege-machine-realtime",
+          "icon": "settings.png",
+          "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "5",
+    "group_key": "SystemManagement",
+    "group_name": "SystemManagement",
+    "group_path": "system-management",
+    "group_icon": "systemmanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "5-1",
+        "key": "SystemConfig",
+        "name": "Configuration",
+        "path": "system-config",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-2",
+        "key": "PersonalAccessToken",
+        "name": "PersonalAccessToken",
+        "path": "personal-access-token",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-3",
+        "key": "HistoryUser",
+        "name": "HistoryUser",
+        "path": "history-user",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-4",
+        "key": "SystemCommand",
+        "name": "SystemCommand",
+        "path": "system-command",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-5",
+        "key": "TrackingSystem",
+        "name": "TrackingSystems",
+        "path": "tracking-system",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-6",
+        "key": "ListService",
+        "name": "DownloadServiceSettingCollection",
+        "path": "list-service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-7",
+        "key": "SystemConfigGroupDevice",
+        "name": "SystemConfigGroupDevice",
+        "path": "system-config-group-device",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "6",
+    "group_key": "Reports",
+    "group_name": "Reports",
+    "group_path": "reports",
+    "group_icon": "settings.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "6-1",
+        "key": "Reports",
+        "name": "Reports",
+        "path": "reports",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  }
+]

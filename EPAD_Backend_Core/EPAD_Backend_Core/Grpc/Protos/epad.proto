@@ -1,0 +1,65 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "EPAD_Backend_Core.Protos";
+
+package epad;
+
+service UserNamagement {
+    rpc GetAllEmployeeInfo (ListEmployeeReq) returns (EmployeeInfoResults) {}
+    rpc GetEmployeeInfo (EmployeeReq) returns (EmployeeInfoResult) {}
+    rpc InsertEmployeeInfo (PostEmployeeReq) returns (EmployeeInfoResult) {}
+    rpc UpdateEmployeeInfo (PutEmployeeReq) returns (EmployeeInfoResult) {}
+    rpc DeleteEmployeeInfo (EmployeeReq) returns (Empty) {}
+}
+
+message Empty {}
+
+message ListEmployeeReq {
+    repeated google.protobuf.StringValue employeeATID = 1;
+    google.protobuf.Int32Value companyIndex = 2;
+}
+
+message EmployeeReq {
+    google.protobuf.StringValue employeeATID = 1;
+    google.protobuf.Int32Value companyIndex = 2;
+}
+
+message PutEmployeeReq {
+    google.protobuf.StringValue employeeATID = 1;
+    google.protobuf.Int32Value companyIndex = 2;
+    EmployeeInfoResult employeeInfo = 3;
+}
+
+message PostEmployeeReq {
+    google.protobuf.StringValue employeeATID = 1;
+    google.protobuf.Int32Value companyIndex = 2;
+    EmployeeInfoResult employeeInfo = 3;
+}
+
+message EmployeeInfoResult {
+	google.protobuf.StringValue EmployeeCode = 1;
+	google.protobuf.StringValue FullName = 2;
+	google.protobuf.Int32Value Gender = 3;
+	google.protobuf.Int32Value DayOfBirth = 4;
+	google.protobuf.Int32Value MonthOfBirth = 5;
+	google.protobuf.Int32Value YearOfBirth = 6;
+	google.protobuf.StringValue NameOnMachine = 7;
+	google.protobuf.Int32Value  EmployeeType = 8;
+	google.protobuf.Timestamp CreatedDate = 9;
+	google.protobuf.StringValue  CardNumber = 10;
+	google.protobuf.StringValue  EmployeeATID = 11;
+	google.protobuf.Int32Value  CompanyIndex = 12;
+	google.protobuf.BytesValue  Avatar = 13;
+	google.protobuf.Timestamp  JoinedDate = 14;
+	google.protobuf.StringValue  Email = 15;
+	google.protobuf.StringValue  Phone = 16;
+	google.protobuf.Timestamp  UpdatedDate = 17;
+	google.protobuf.StringValue UpdatedUser = 18;
+}
+
+message EmployeeInfoResults {
+	repeated EmployeeInfoResult employeeInfoResults = 1;
+}
+

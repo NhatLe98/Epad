@@ -1,0 +1,9 @@
+﻿Chào <strong>anh/chị</strong>,
+
+Hệ thống kiểm soát ra vào cổng GCS xin thông báo danh sách các trường hợp vi phạm cảnh báo vào lúc <startDate> (File đính kèm).
+
+
+Trân trọng.
+TINH HOA SOLUTIONS CORP.
+ezHR Portal.
+(Mail được gửi tự động, xin vui lòng không trả lời)

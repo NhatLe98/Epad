@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPAD_Common\EPAD_Common.csproj" />
+    <ProjectReference Include="..\EPAD_Data\EPAD_Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="EmailTemplate\DownloadLog_Email.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="EmailTemplate\DownloadLog_Email.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interface\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.95.4" />
+    <PackageReference Include="SSH.NET" Version="2023.0.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,1765 @@
+body:has(.formlogin-wrapper) {
+	color: #2c3e50;
+}
+
+.el-input.is-disabled{
+	.el-input__inner{
+		background-color: gray !important;
+	}
+}
+
+tr.warning-row {
+	div,
+	span{
+		color: black !important;
+	}
+}
+
+// body:has(#factoryUserMonitoring) {
+// 	.el-dialog {
+// 		background-color: var(--dialog-background-color);
+// 		background: var(--dialog-background);
+
+// 		.el-dialog__header {
+// 			background-color: var(--dialog-header-background-color);
+// 			color: var(--text-color);
+// 			span{
+// 				color: var(--text-color);
+// 			}
+// 		}
+
+// 		.el-dialog__body{
+// 			// .el-button:not(.el-button.el-button--primary):not(.el-button.el-button--danger):not(.el-button.el-button--success):not(.el-button.el-button--info):not(.el-button.el-button--warning){
+// 			// 	background-color: var(--background-color);
+// 			// }
+// 			span{
+// 				color: var(--text-color);
+// 			}
+// 		}
+// 	}
+
+// 	.el-table::before {
+// 		background-color: var(--background-color);
+// 	}
+
+// 	.el-table {
+// 		background-color: var(--background-color) !important;
+
+// 		.el-table__fixed::before {
+// 			background-color: var(--background-color);
+// 		}
+
+// 		.el-table__fixed {
+// 			background-color: var(--background-color);
+
+// 			.el-table__fixed-header-wrapper {
+// 				background-color: var(--background-color);
+
+// 				th {
+// 					background-color: var(--background-color);
+// 					border-bottom-color: var(--table-border-color) !important;
+// 					color: var(--table-header-text-color) !important;
+// 				}
+
+// 				th>div {
+// 					color: var(--table-header-text-color) !important;
+// 				}
+// 			}
+
+// 			.el-table__fixed-body-wrapper {
+// 				background-color: var(--background-color);
+
+// 				td {
+// 					background-color: var(--background-color);
+// 					border-bottom-color: var(--table-border-color) !important;
+// 					color: var(--table-body-text-color) !important;
+// 				}
+
+// 				tr:not(.current-row):not(.warning-row)>td>div {
+// 					color: var(--table-body-text-color) !important;
+// 					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+// 						color: var(--table-body-text-color) !important;
+// 					}
+// 					div{
+// 						color: var(--table-body-text-color) !important;
+// 					}
+// 					p{
+// 						color: var(--table-body-text-color) !important;
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		.el-table__header-wrapper {
+// 			background-color: var(--background-color);
+
+// 			th {
+// 				background-color: var(--background-color);
+// 				border-bottom-color: var(--table-border-color) !important;
+// 				color: var(--table-header-text-color) !important;
+// 			}
+
+// 			th>div {
+// 				color: var(--table-header-text-color) !important;
+// 			}
+// 		}
+
+// 		.el-table__body-wrapper {
+// 			background-color: var(--background-color);
+
+// 			td {
+// 				background-color: var(--background-color);
+// 				border-bottom-color: var(--table-border-color) !important;
+// 				color: var(--table-body-text-color) !important;
+// 			}
+
+// 			tr:not(.current-row):not(.warning-row)>td>div {
+// 				color: var(--table-body-text-color) !important;
+// 				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+// 					color: var(--table-body-text-color) !important;
+// 				}
+// 				div{
+// 					color: var(--table-body-text-color) !important;
+// 				}
+// 				p{
+// 					color: var(--table-body-text-color) !important;
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	.el-button.el-button--success,
+// 	.el-button.el-button--info,
+// 	.el-button.el-button--warning,
+// 	.el-button.el-button--danger,
+// 	.el-button.el-button--primary{
+// 		span {
+// 			color: var(--primary-button-text) !important;
+// 		}
+// 	}
+// 	.el-button:not(.el-button.el-button--primary):not(.el-button.el-button--danger):not(.el-button.el-button--success):not(.el-button.el-button--info):not(.el-button.el-button--warning){
+// 		span{
+// 			color: black !important;
+// 		}
+// 	}
+// }
+
+// body:not(:has(.formlogin-wrapper)):not(:has(#factoryUserMonitoring)) {
+body:not(:has(.formlogin-wrapper)) {
+	.full-screen.fullscreen-container,
+	.Content {
+		background: var(--master-background) !important;
+	}
+
+	.factory-user-monitoring__dashboard-item > div{
+		background-color: var(--dashboard-item-background-color) !important;
+		border-color: var(--item-background-color) !important;
+	}
+
+	.el-time-panel.el-popper,
+	.el-dropdown-menu.el-popper,
+	.popupshowcol{
+		background-color: var(--item-background-color) !important;
+	}
+
+	.report-employee-filter{
+		button{
+			background-color: var(--background-color);
+			span{
+				color: var(--text-color) !important;
+			}
+		}
+	}
+
+	.el-select-dropdown.el-popper{
+		.el-button.el-button--primary{
+			background: var(--primary-button-background) !important;
+		}
+	}
+
+	.button__item-background-color{
+		outline-color: var(--item-background-color) !important;
+	}
+
+	.el-button.register-biometrics {
+		i {
+			color: var(--item-background-color) !important;
+		}
+	}
+
+	.el-loading-mask {
+		background-color: var(--dashboard-item-background-color);
+
+		circle {
+			stroke: var(--icon-filter-color);
+		}
+	}
+
+	.el-collapse {
+		border-top: var(--background-color);
+		border-bottom: var(--background-color);
+	}
+
+	.el-dialog {
+		background-color: var(--dialog-background-color);
+		background: var(--dialog-background);
+
+		.el-dialog__header {
+			background-color: var(--dialog-header-background-color);
+			color: var(--text-color);
+			span{
+				color: var(--text-color);
+			}
+		}
+
+		.el-dialog__body{
+			// .el-button:not(.el-button.el-button--primary):not(.el-button.el-button--danger):not(.el-button.el-button--success):not(.el-button.el-button--info):not(.el-button.el-button--warning){
+			// 	background-color: var(--background-color);
+			// }
+			:not(.el-button.el-button--primary):not(.el-button.el-button--danger.is-plain)>span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense):not(.not-connect):not(.connecting):not(.connected):not(.el-link--inner):not(.el-alert__title):not(.no-filter):not(#FormName):not(.menu-item-icon):not(.child-menu-item-icon):not(.text-danger):not(.more-text) {
+				color: var(--text-color);
+			}
+		}
+	}
+
+	.el-table::before {
+		background-color: var(--background-color);
+	}
+
+	.not-table-text-color>.el-table{
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--table-body-text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+	.el-table.not-table-text-color {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--table-body-text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+	.el-table.attendance-and-evacuation__table {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				// background-color: var(--background-color);
+				background-color: #695f5d;
+
+				th {
+					// background-color: var(--item-background-color);
+					background-color: #695f5d;
+					border-bottom-color: var(--table-border-color) !important;
+					// color: var(--table-header-text-color) !important;
+				}
+
+				// th>div {
+				// 	color: var(--table-header-text-color) !important;
+				// }
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			// background-color: var(--background-color);
+			background-color: #695f5d;
+
+			th {
+				// background-color: var(--item-background-color);
+				background-color: #695f5d;
+				border-bottom-color: var(--table-border-color) !important;
+				// color: var(--table-header-text-color) !important;
+			}
+
+			// th>div {
+			// 	color: var(--table-header-text-color) !important;
+			// }
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+
+	:not(.not-table-text-color):not(.attendance-and-evacuation__table)>.el-table:not(.not-table-text-color):not(.attendance-and-evacuation__table) {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-body-text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--table-body-text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--table-body-text-color) !important;
+					}
+					div{
+						color: var(--table-body-text-color) !important;
+					}
+					p{
+						color: var(--table-body-text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-body-text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--table-body-text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--table-body-text-color) !important;
+				}
+				div{
+					color: var(--table-body-text-color) !important;
+				}
+				p{
+					color: var(--table-body-text-color) !important;
+				}
+			}
+		}
+	}
+
+	.el-date-picker,
+	.el-select-dropdown{
+		background-color: var(--dropdown-background-color) !important;
+		background: var(--dropdown-background) !important;
+	}
+
+	.el-select-department-tree__popover{
+		background-color: var(--dropdown-background-color) !important;
+		background: var(--dropdown-background) !important;
+	}
+
+	.el-message-box,
+	.el-collapse,
+	.el-select,
+	.el-popper,
+	.el-popover {
+		background-color: var(--background-color);
+
+		.el-collapse-item__wrap {
+			background-color: var(--background-color);
+		}
+
+		.el-picker-panel__icon-btn {
+			color: var(--text-color);
+		}
+
+		.el-picker-panel__icon-btn:hover {
+			color: var(--active-color);
+		}
+
+		.el-collapse-item {
+			background-color: var(--collapse-item-background-color) !important;
+
+			.el-collapse-item__header,
+			.el-collapse-item__content {
+				background-color: var(--collapse-item-background-color) !important;
+				color: var(--text-color) !important;
+			}
+		}
+
+		.el-tree-node__expand-icon.is-leaf {
+			visibility: hidden;
+		}
+
+		small {
+			color: var(--text-color) !important;
+		}
+
+		p {
+			color: var(--text-color) !important;
+		}
+
+		span:not(.not-connect):not(.connecting):not(.connected) {
+			color: var(--text-color);
+		}
+
+		i {
+			color: var(--icon-color) !important;
+		}
+
+		:not(.el-input.is-disabled)>input:not(.el-select__input) {
+			color: var(--text-color) !important;
+			background-color: var(--background-color) !important;
+			color-scheme: dark !important;
+		}
+
+		.el-select__input {
+			color: var(--text-color);
+		}
+
+		input:-webkit-autofill,
+		input:-webkit-autofill:focus {
+			/*transition: background-color 0s 600000s, color 0s 600000s !important;
+		-webkit-box-shadow: 0 0 0px 1000px var(--background-color) inset;*/
+		}
+
+		input::placeholder {
+			color: var(--placeholder-color) !important;
+			opacity: 1;
+		}
+
+		label {
+			color: var(--text-color);
+		}
+
+		.el-textarea{
+			background-color: var(--background-color);
+			background: var(--background);
+			color: var(--text-color);
+		}
+		textarea {
+			background-color: var(--background-color);
+			background: var(--background);
+			color: var(--text-color);
+		}
+
+		th {
+			color: var(--text-color);
+		}
+
+		td {
+			color: var(--text-color);
+		}
+
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+			color: var(--text-color);
+		}
+
+		ul {
+			background-color: var(--background-color);
+		}
+
+		.custom-legend > ul{
+			background-color: var(--item-background-color);
+		}
+
+		li:not(.el-menu-item) {
+			color: var(--text-color);
+		}
+
+		li:not(.el-menu-item):hover {
+			color: var(--active-color);
+		}
+
+		li.fullname {
+			color: var(--header-text-color);
+		}
+
+		.Tree,
+		.el-tree {
+			background-color: var(--tree-background-color);
+			background: var(--tree-background);
+
+			.el-tree-node__content,
+			.el-tree-node__content:hover {
+				background-color: var(--background-color);
+			}
+		}
+
+		.el-select-dropdown__item.hover {
+			color: var(--select-dropdown-item-color) !important;
+
+			span {
+				color: var(--select-dropdown-item-color) !important;
+			}
+		}
+
+		.el-select-dropdown__item.selected {
+			color: var(--active-color) !important;
+
+			span {
+				color: var(--active-color) !important;
+			}
+		}
+
+		.el-date-table td.today,
+		.el-date-table td.available:hover {
+			span {
+				color: var(--active-color) !important;
+			}
+		}
+	}
+
+	.el-button.el-button--success,
+	.el-button.el-button--info,
+	.el-button.el-button--warning,
+	.el-button.el-button--danger:not(.el-button.el-button--danger.is-plain),
+	.el-button.el-button--primary{
+		span {
+			color: var(--primary-button-text) !important;
+		}
+	}
+	:not(.report-filter)>.el-button:not(.el-button.el-button--primary):not(.el-button.el-button--danger):not(.el-button.el-button--success):not(.el-button.el-button--info):not(.el-button.el-button--warning){
+		span{
+			color: black !important;
+		}
+	}
+}
+
+// #app:not(:has(.formlogin-wrapper)):not(:has(#factoryUserMonitoring)) {
+#app:not(:has(.formlogin-wrapper)) {
+	.full-screen.fullscreen-container,
+	.Content {
+		background: var(--master-background) !important;
+	}
+
+	.factory-user-monitoring__dashboard-item > div {
+		background-color: var(--dashboard-item-background-color) !important;
+		border-color: var(--item-background-color) !important;
+	}
+
+	.el-time-panel.el-popper,
+	.el-dropdown-menu.el-popper,
+	.popupshowcol{
+		background-color: var(--item-background-color) !important;
+	}
+
+	.report-employee-filter{
+		button{
+			background-color: var(--background-color);
+			span{
+				color: var(--text-color) !important;
+			}
+		}
+	}
+
+	.el-select-dropdown.el-popper{
+		.el-button.el-button--primary{
+			background: var(--primary-button-background) !important;
+		}
+	}
+
+	.button__item-background-color{
+		outline-color: var(--item-background-color) !important;
+	}
+
+	.el-button.register-biometrics {
+		i {
+			color: var(--item-background-color) !important;
+		}
+	}
+
+	// /* width */
+	// ::-webkit-scrollbar {}
+
+	// /* Track */
+	// ::-webkit-scrollbar-track {
+	// 	background: var(--text-color) !important;
+	// 	border-radius: 10px;
+	// }
+
+	// /* Handle */
+	// ::-webkit-scrollbar-thumb {
+	// 	background: var(--icon-filter-color) !important;
+	// 	border-radius: 10px;
+	// }
+
+	// /* Handle on hover */
+	// ::-webkit-scrollbar-thumb:hover {
+	// 	background: var(--icon-filter-color) !important;
+	// 	border-radius: 10px;
+	// }
+
+	small {
+		color: var(--text-color) !important;
+	}
+
+	p {
+		color: var(--text-color) !important;
+	}
+
+	a {
+		color: var(--text-color) !important;
+	}
+
+	.item-attend{
+		color: var(--text-color) !important;
+	}
+
+	:not(.more-text):not(.el-submenu__title):not(.is-active):not(.el-button.el-button--primary):not(.el-button.el-button--danger.is-plain)>span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense):not(.not-connect):not(.connecting):not(.connected):not(.el-link--inner):not(.el-alert__title):not(.no-filter):not(#FormName):not(.menu-item-icon):not(.child-menu-item-icon):not(.text-danger):not(.more-text) {
+		color: var(--text-color);
+	}
+
+	.el-dropdown-link:has(.more-text) {
+		color: var(--icon-filter-color) !important;:not(.el-button.el-button--danger.is-plain)
+		span{
+			color: var(--icon-filter-color) !important;
+		}
+	}
+
+	.el-button.el-button--primary{
+		background: var(--primary-button-background);
+	}
+
+	.el-button.el-button--success,
+	.el-button.el-button--info,
+	.el-button.el-button--warning,
+	.el-button.el-button--danger:not(.el-button.el-button--danger.is-plain),
+	.el-button.el-button--primary{
+		span {
+			color: var(--primary-button-text) !important;
+		}
+	}
+	:not(.report-filter)>.el-button:not(.el-button.el-button--primary):not(.el-button.el-button--danger):not(.el-button.el-button--success):not(.el-button.el-button--info):not(.el-button.el-button--warning){
+		span{
+			color: black !important;
+		}
+	}
+
+	span.row-monitoring-value {
+		background-color: var(--background-color);
+	}
+
+	:not(.el-button--primary):not(.register-biometrics) {
+		i:not(.el-alert__icon):not(.el-icon-thumb):not(.el-icon-upload) {
+			color: var(--icon-color) !important;
+		}
+	}
+
+	i.el-icon-close::before,
+	i.el-icon-full-screen::before {
+		color: var(--icon-filter-color);
+	}
+
+	:not(.el-input.is-disabled)>input:not(.el-select__input) {
+		color: var(--text-color) !important;
+		background-color: var(--background-color) !important;
+		color-scheme: var(--color-scheme) !important;
+	}
+
+	.el-select__input {
+		color: var(--text-color);
+	}
+
+	input:-webkit-autofill,
+	input:-webkit-autofill:focus {
+		/*transition: background-color 0s 600000s, color 0s 600000s !important;
+	  -webkit-box-shadow: 0 0 0px 1000px var(--background-color) inset;*/
+	}
+
+	input::placeholder {
+		color: var(--placeholder-color) !important;
+		opacity: 1;
+	}
+
+	:not(.contact_lable_color)>label {
+		color: var(--text-color);
+	}
+
+	.el-textarea{
+		background-color: var(--background-color);
+		background: var(--background);
+		color: var(--text-color);
+	}
+	textarea {
+		background-color: var(--background-color);
+		background: var(--background);
+		color: var(--text-color);
+	}
+
+	th {
+		color: var(--text-color);
+	}
+
+	td {
+		color: var(--text-color);
+	}
+
+	ul {
+		background-color: var(--background-color);
+	}
+
+	.custom-legend > ul{
+		background-color: var(--dashboard-item-background-color);
+	}
+
+	li:not(.el-menu-item) {
+		color: var(--text-color);
+	}
+
+	li.el-upload-list__item:hover{
+		background-color: var(--text-color);
+		i,
+		a{
+			color: var(--background-color) !important;
+		}
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		color: var(--text-color);
+	}
+
+	.current-row{
+		color: var(--active-color) !important;
+		.cell{
+			color: var(--active-color) !important;
+		}
+	}
+
+	.contact__title {
+		color: var(--text-color) !important;
+	}
+
+	.el-form {
+		background-color: var(--background-color);
+	}
+
+	div:not(.Content):has(.vue-grid-layout) {
+		background-color: var(--dashboard-background-color) !important;
+		background: var(--dashboard-background) !important;
+	}
+
+	.vue-grid-layout {
+		background-color: var(--dashboard-background-color);
+		background: var(--dashboard-background);
+
+		.vue-grid-item {
+			background-color: var(--dashboard-item-background-color) !important;
+		}
+	}
+
+	/* .group-btn,
+	.t-button-bar,
+	.printer-control__toolbar,
+	.datatable-function {
+	  button:not(.add-button) {
+		span {
+		  img:not(.no-filter) {
+			filter: var(--icon-filter) 
+			// drop-shadow(5px 0 0 red) 
+			// drop-shadow(0 5px 0 red)
+			// drop-shadow(-5px 0 0 red) 
+			// drop-shadow(0 -5px 0 red)
+			;
+		  }
+		}
+	  }
+	}*/
+
+	.box {
+		background-color: var(--background-color);
+	}
+
+	button:not(.add-button) {
+		span {
+			img:not(.no-filter) {
+				filter: var(--icon-filter)
+					/*drop-shadow(5px 0 0 red) 
+		  drop-shadow(0 5px 0 red)
+		  drop-shadow(-5px 0 0 red) 
+		  drop-shadow(0 -5px 0 red)*/
+				;
+			}
+		}
+	}
+
+	.el-input-number {
+		span {
+			background-color: var(--background-color);
+		}
+	}
+
+	.el-submenu.hover-sub-menu.is-active>.el-submenu__title {
+		span {
+			color: var(--menu-text-active-color) !important;
+		}
+
+		i {
+			color: var(--menu-text-active-color) !important;
+		}
+	}
+
+	.el-menu-item.is-active-item {
+		span {
+			color: var(--menu-text-active-color) !important;
+		}
+	}
+
+	.el-sub-menu.is-active {
+		span {
+			color: var(--menu-text-color) !important;
+		}
+	}
+
+	.el-menu-item.is-active {
+		color: var(--menu-text-color);
+	}
+
+	tr:not(.warning-row) .cell {
+		color: var(--text-color) !important;
+		span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+			color: var(--text-color) !important;
+		}
+	}
+
+	.number {
+		color: var(--text-color) !important;
+	}
+
+	.el-icon {
+		color: var(--text-color) !important;
+	}
+
+	// .el-button--default {
+	// 	background-color: var(--background-color);
+	// }
+
+	.sort-caret.ascending {
+		border-bottom-color: var(--table-header-caret-color);
+	}
+
+	.sort-caret.descending {
+		border-top-color: var(--table-header-caret-color);
+	}
+
+	.ascending {
+		.sort-caret.ascending {
+			border-bottom-color: var(--active-color);
+		}
+	}
+
+	.descending {
+		.sort-caret.descending {
+			border-top-color: var(--active-color);
+		}
+	}
+
+	.el-tag {
+		background-color: var(--background-color);
+
+		i {
+			background-color: var(--background-color);
+			border: 1px solid var(--text-color);
+		}
+	}
+
+	.container,
+	.el-container {
+		background-color: var(--background-color) !important;
+		background: var(--background) !important;
+
+		.el-header {
+			.el-dialog {
+				:not(.el-button--primary):not(.el-button--danger)>span {
+					color: var(--text-color);
+				}
+			}
+		}
+
+		.el-main {
+			box-shadow: var(--main-box-shadow);
+			background-color: var(--background-color) !important;
+			background: var(--background) !important;
+
+			.attendance-monitoring {
+				.attendance-monitoring__header {
+					background-color: var(--item-background-color) !important;
+				}
+
+				.attendance-monitoring__body {
+					background-color: var(--background-color);
+				}
+
+				.attendance-monitoring__body>div:first-child {
+					background-color: var(--item-background-color) !important;
+
+					.attendance-morning__gate-amount>div {
+						box-shadow: 3px 3px 6px 3px var(--item-background-color) !important;
+					}
+				}
+
+				.attendance-monitoring__count {
+					background-color: var(--dashboard-item-background-color) !important;
+					color: var(--text-color);
+				}
+			}
+		}
+	}
+
+	.el-tree-node__expand-icon.is-leaf {
+		visibility: hidden;
+	}
+
+	.Tree,
+	.el-tree {
+		background-color: var(--tree-background-color);
+		background: var(--tree-background);
+
+		.el-tree-node__content,
+		.el-tree-node__content:hover {
+			background-color: var(--background-color);
+		}
+	}
+
+	.el-tree.table-text-color{
+		.el-tree-node__content{
+			color: var(--table-body-text-color) !important;
+			span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+				color: var(--table-body-text-color) !important;
+			}
+			div{
+				color: var(--table-body-text-color) !important;
+			}
+			p{
+				color: var(--table-body-text-color) !important;
+			}
+		}
+	}
+
+	.popupshowcol {
+		background-color: var(--background-color);
+	}
+
+	.department-title {
+		color: var(--text-color);
+	}
+
+	.el-table::before {
+		background-color: var(--background-color);
+	}
+
+	.monitoring-history-table {
+		.el-table {
+			background-color: var(--item-background-color) !important;
+
+			.el-table__fixed::before {
+				background-color: var(--item-background-color);
+			}
+
+			.el-table__fixed {
+				background-color: var(--item-background-color);
+
+				.el-table__fixed-header-wrapper {
+					background-color: var(--item-background-color);
+
+					th {
+						background-color: var(--item-background-color);
+						border-bottom-color: var(--table-border-color) !important;
+						color: var(--table-header-text-color) !important;
+					}
+
+					th>div {
+						color: var(--table-header-text-color) !important;
+					}
+				}
+
+				.el-table__fixed-body-wrapper {
+					background-color: var(--item-background-color);
+
+					tr {
+						background: var(--background);
+					}
+
+					td {
+						background-color: var(--item-background-color);
+						border-bottom-color: var(--table-border-color) !important;
+						color: var(--table-body-text-color) !important;
+					}
+
+					tr:not(.current-row):not(.warning-row)>td>div {
+						color: var(--table-body-text-color) !important;
+						span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+							color: var(--table-body-text-color) !important;
+						}
+						div{
+							color: var(--table-body-text-color) !important;
+						}
+						p{
+							color: var(--table-body-text-color) !important;
+						}
+					}
+				}
+			}
+
+			.el-table__header-wrapper {
+				background-color: var(--item-background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__body-wrapper {
+				background-color: var(--item-background-color);
+
+				tr {
+					background: var(--background);
+				}
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-body-text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--table-body-text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--table-body-text-color) !important;
+					}
+					div{
+						color: var(--table-body-text-color) !important;
+					}
+					p{
+						color: var(--table-body-text-color) !important;
+					}
+				}
+			}
+		}
+	}
+
+	.not-table-text-color>.el-table{
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+	.el-table.not-table-text-color {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+	.el-table.attendance-and-evacuation__table {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				// background-color: var(--background-color);
+				background-color: #695f5d;
+
+				th {
+					// background-color: var(--item-background-color);
+					background-color: #695f5d;
+					border-bottom-color: var(--table-border-color) !important;
+					// color: var(--table-header-text-color) !important;
+				}
+
+				// th>div {
+				// 	color: var(--table-header-text-color) !important;
+				// }
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--text-color) !important;
+					}
+					div{
+						color: var(--text-color) !important;
+					}
+					p{
+						color: var(--text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			// background-color: var(--background-color);
+			background-color: #695f5d;
+
+			th {
+				// background-color: var(--item-background-color);
+				background-color: #695f5d;
+				border-bottom-color: var(--table-border-color) !important;
+				// color: var(--table-header-text-color) !important;
+			}
+
+			// th>div {
+			// 	color: var(--table-header-text-color) !important;
+			// }
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--text-color) !important;
+				}
+				div{
+					color: var(--text-color) !important;
+				}
+				p{
+					color: var(--text-color) !important;
+				}
+			}
+		}
+	}
+
+	:not(.not-table-text-color):not(.attendance-and-evacuation__table)>.el-table:not(.not-table-text-color):not(.attendance-and-evacuation__table) {
+		background-color: var(--background-color) !important;
+
+		.el-table__fixed::before {
+			background-color: var(--background-color);
+		}
+
+		.el-table__fixed {
+			background-color: var(--background-color);
+
+			.el-table__fixed-header-wrapper {
+				background-color: var(--background-color);
+
+				th {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-header-text-color) !important;
+				}
+
+				th>div {
+					color: var(--table-header-text-color) !important;
+				}
+			}
+
+			.el-table__fixed-body-wrapper {
+				background-color: var(--background-color);
+
+				td {
+					background-color: var(--item-background-color);
+					border-bottom-color: var(--table-border-color) !important;
+					color: var(--table-body-text-color) !important;
+				}
+
+				tr:not(.current-row):not(.warning-row)>td>div {
+					color: var(--table-body-text-color) !important;
+					span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+						color: var(--table-body-text-color) !important;
+					}
+					div{
+						color: var(--table-body-text-color) !important;
+					}
+					p{
+						color: var(--table-body-text-color) !important;
+					}
+				}
+			}
+		}
+
+		.el-table__header-wrapper {
+			background-color: var(--background-color);
+
+			th {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-header-text-color) !important;
+			}
+
+			th>div {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.el-table__body-wrapper {
+			background-color: var(--background-color);
+
+			td {
+				background-color: var(--item-background-color);
+				border-bottom-color: var(--table-border-color) !important;
+				color: var(--table-body-text-color) !important;
+			}
+
+			tr:not(.current-row):not(.warning-row)>td>div {
+				color: var(--table-body-text-color) !important;
+				span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+					color: var(--table-body-text-color) !important;
+				}
+				div{
+					color: var(--table-body-text-color) !important;
+				}
+				p{
+					color: var(--table-body-text-color) !important;
+				}
+			}
+		}
+	}
+
+	.el-pagination {
+		button {
+			background-color: var(--background-color);
+		}
+
+		.el-pager {
+			li {
+				background-color: var(--background-color);
+				color: var(--text-color);
+			}
+
+			li.active {
+				color: var(--active-color) !important;
+			}
+		}
+	}
+
+	.el-dialog {
+		background-color: var(--dialog-background-color);
+
+		.el-dialog__header {
+			background-color: var(--dialog-header-background-color);
+		}
+	}
+
+	.el-transfer-panel {
+		background-color: var(--background-color);
+
+		.el-transfer-panel__header {
+			background-color: var(--item-background-color);
+		}
+
+		.el-transfer-panel__body {
+			background-color: var(--background-color);
+		}
+	}
+
+	.el-tabs {
+		.el-tabs__header {
+			background-color: var(--background-color);
+		}
+
+		.el-tabs__item {
+			color: var(--text-color);
+		}
+
+		.el-tabs__item.is-active {
+			color: var(--active-color);
+
+			span,
+			i {
+				color: var(--active-color) !important;
+			}
+		}
+	}
+
+	.ag-root-wrapper{
+		background: transparent;
+	}
+
+	.ag-theme-alpine {
+
+		.ag-header,
+		.ag-row {
+			background-color: var(--background-color);
+		}
+
+		.ag-body-viewport,
+		.ag-header-cell {
+			background-color: var(--background-color);
+		}
+
+		.ag-header-cell {
+			color: var(--table-header-text-color) !important;
+
+			span {
+				color: var(--table-header-text-color) !important;
+			}
+		}
+
+		.ag-cell:not(.yellow),
+		.ag-cell-value:not(.yellow) {
+			background-color: var(--background-color);
+			color: var(--table-body-text-color);
+			span:not([name=HardWareLicense]):not(.deviceOffline):not(.deviceOnline):not(.haveLicense):not(.noLicense){
+				color: var(--table-body-text-color) !important;
+			}
+			div{
+				color: var(--table-body-text-color) !important;
+			}
+			p{
+				color: var(--table-body-text-color) !important;
+			}
+		}
+
+		.ag-cell-value.yellow {
+			color: black;
+			span{
+				color: black !important;
+			}
+		}
+	}
+
+	.el-tabs {
+		background-color: var(--background-color);
+	}
+
+	.lines-info__form-header {
+		background-color: var(--background-color) !important;
+	}
+
+	.bgDashboard{
+		span{
+			color: var(--text-color) !important;
+		}
+	}
+}
+
+header {
+	background-color: var(--header-color) !important;
+	color: var(--header-text-color) !important;
+}
+
+header span {
+	color: var(--header-text-color) !important;
+
+	.notifydialogbody span {
+		color: var(--text-color) !important;
+	}
+}
+
+.botNav {
+	background-color: var(--menu-color) !important;
+}
+
+.logoNav {
+	background-color: var(--menu-color) !important;
+}

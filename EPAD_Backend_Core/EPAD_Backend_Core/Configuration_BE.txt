@@ -1,0 +1,38 @@
+- Ngày: 20-10-2022
+- Dev: Vũ.Bùi
+- Ticket: P2-12345
+- Key: 
+- Diễn giải:
+------------------------------------------------------------------------
+- Ngày: 20-03-2023
+- Dev: Nguyễn Dương
+- Ticket: P2-5539
+- Key: TimesResendMail
+- Diễn giải: Số lần tối đa gửi lại email đã gửi thất bại,
+- Đường dẫn: Config.json
+------------------------------------------------------------------------
+- Ngày: 21-03-2023
+- Dev: Nguyễn Dương
+- Ticket: P2-5539
+- Key: ScheduleIntervalSecond
+- Diễn giải: Số giây cách mỗi lần lặp lại của schedule,
+- Đường dẫn: appsettings.json
+------------------------------------------------------------------------
+- Ngày: 22-06-2023
+- Dev: Long Ẩn
+- Ticket: P2-5878
+- Key: connectionStringHIK
+- Diễn giải: Tích hợp dữ liệu từ HIK,
+- Đường dẫn: appsettings.json
+------------------------------------------------------------------------
+- Ngày: 08-07-2024
+- Dev: Nguyễn Dương
+- Key: AutoGenerateIDPrefix
+- Diễn giải: Ký tự đầu tiên của mã ID tự động sinh ra cho thẻ khách/ tài xế khi khai báo thẻ,
+- Đường dẫn: Config.json
+------------------------------------------------------------------------
+- Ngày: 08-07-2024
+- Dev: Nguyễn Dương
+- Key: AutoGenerateCustomerIDPrefix
+- Diễn giải: Ký tự đầu tiên của mã người dùng tự động sinh ra khi thêm khách,
+- Đường dẫn: Config.json

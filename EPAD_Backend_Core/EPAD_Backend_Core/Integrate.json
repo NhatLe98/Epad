@@ -1,0 +1,13 @@
+{
+
+  "AVN": {
+    //"Domain": "https://hrportaltest.ajinomoto.com.vn:4433",
+    "Domain": "",
+    "Api": "",
+    "CompanyIndex": 2,
+    "Token": "",
+    "TokenHeader": "",
+    "UserName": "Test.API",
+    "Password": "VnrAvn@123987"
+  }
+}

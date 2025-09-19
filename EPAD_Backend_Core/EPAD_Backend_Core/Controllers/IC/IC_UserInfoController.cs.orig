@@ -1,0 +1,682 @@
+﻿using EPAD_Backend_Core.WebUtilitys;
+using EPAD_Common.Types;
+using EPAD_Data;
+using EPAD_Data.Entities;
+using EPAD_Data.Models;
+using EPAD_Data.Models.Other;
+using EPAD_Logic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EPAD_Backend_Core.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class UserInfoController : ControllerBase
+    {
+        private EPAD_Context context;
+        private ezHR_Context otherContext;
+        private IMemoryCache cache;
+        IConfiguration configuration;
+        private readonly IHostingEnvironment _hostingEnvironment;
+        private IIC_UserInfoLogic _iIC_UserInfoLogic;
+        private IIC_UserMasterLogic _iIC_UserMasterLogic;
+        private IIC_ServiceAndDeviceLogic _iC_ServiceAndDeviceLogic;
+        private IIC_EmployeeLogic _IIC_EmployeeLogic;
+        private IHR_EmployeeLogic _IHR_EmployeeLogic;
+        private IIC_WorkingInfoLogic _IIC_WorkingInfoLogic;
+        private IIC_CommandLogic _IIC_CommandLogic;
+        public UserInfoController(EPAD_Context pContext, IMemoryCache pCache,
+            IConfiguration pConfiguration,
+            IIC_UserInfoLogic iIC_UserInfoLogic,
+            IIC_ServiceAndDeviceLogic iC_ServiceAndDeviceLogic,
+            IIC_EmployeeLogic iIC_EmployeeLogic,
+            IHR_EmployeeLogic iHR_EmployeeLogic,
+            IIC_WorkingInfoLogic iIC_WorkingInfoLogic,
+            IIC_CommandLogic iIC_CommandLogic,
+            IIC_UserMasterLogic iIC_UserMasterLogic,
+            ezHR_Context pOtherContext)
+        {
+            context = pContext;
+            cache = pCache;
+            configuration = pConfiguration;
+            otherContext = pOtherContext;
+            _hostingEnvironment = hostingEnvironment;
+            _iIC_UserInfoLogic = iIC_UserInfoLogic;
+            _iIC_UserMasterLogic = iIC_UserMasterLogic;
+            _iC_ServiceAndDeviceLogic = iC_ServiceAndDeviceLogic;
+            _IIC_EmployeeLogic = iIC_EmployeeLogic;
+            _IHR_EmployeeLogic = iHR_EmployeeLogic;
+            _IIC_WorkingInfoLogic = iIC_WorkingInfoLogic;
+            _IIC_CommandLogic = iIC_CommandLogic;
+        }
+        [Authorize]
+        [ActionName("GetUserInfo")]
+        [HttpGet]
+        public IActionResult GetUserInfo()
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            result = Ok(user);
+            return result;
+        }
+
+        // This Function using for PUSH Service call when add new or update employee info on device
+        [Authorize]
+        [ActionName("AddOrUpdateUserInfo")]
+        [HttpPost]
+        public async Task<IActionResult> AddOrUpdateUserInfo([FromBody] UserInfoPram Pram)
+        {
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            if (Pram.ListUserInfo != null && Pram.ListUserInfo.Count > 0)
+            {
+                listEmpToInsert = Pram.ListUserInfo.Select(e => new IC_EmployeeDTO
+                {
+                    EmployeeATID = e.UserID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                    CardNumber = e.CardNumber,
+                    Privilege = e.Privilege,
+                    NameOnMachine = e.NameOnDevice,
+                    Password = e.PasswordOndevice,
+                    CreatedDate = DateTime.Now,
+                    UpdatedUser = user.UserName,
+                    CompanyIndex = user.CompanyIndex,
+                    Gender = 1,
+                    DepartmentIndex = 0,
+                    JoinedDate = DateTime.Now
+                }).ToList();
+
+                listWorkingInfo = listEmpToInsert.Select(e => new IC_WorkingInfoDTO() {
+                    EmployeeATID = e.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                    CompanyIndex = e.CompanyIndex,
+                    DepartmentIndex = (int)e.DepartmentIndex,
+                    IsManager = false,
+                    Status = (short)TransferStatus.Approve,
+                    FromDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    ApprovedDate = DateTime.Now,
+                    ApprovedUser = e.UpdatedUser,
+                    IsSync = true
+                }).ToList();
+                // Create or update User Info
+                _iIC_UserInfoLogic.CheckCreateOrUpdate(Pram, user);
+               
+            }
+
+            result = Ok();
+            return result;
+        }
+
+        // This Function using for PUSH Service call when add new or update employee info on device
+        [Authorize]
+        [ActionName("AddOrUpdateUserInfoV2")]
+        [HttpPost]
+        public IActionResult AddOrUpdateUserInfoV2([FromBody] UserInfoParamV2 param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            _iIC_UserInfoLogic.CheckCreateOrUpdateV2(param, user);
+            //foreach (var item in param.ListUserInfo)
+            //{
+            //    var userfacev2 = context.IC_UserFaceTemplate_v2.Where(t => t.EmployeeATID.Equals(item.UserID) && t.CompanyIndex.Equals(user.CompanyIndex) && t.SerialNumber.Equals(param.SerialNumber)).FirstOrDefault();
+
+            //    if (item.Face != null)
+            //    {
+            //        if (item.Face.TemplateBIODATA != null)
+            //        {
+            //            userfacev2.EmployeeATID = item.UserID;
+            //            userfacev2.CompanyIndex = user.CompanyIndex;
+            //            userfacev2.SerialNumber = param.SerialNumber;
+            //            userfacev2.TemplateBIODATA = item.Face.TemplateBIODATA;
+            //            userfacev2.UpdatedDate = DateTime.Now;
+            //            userfacev2.UpdatedUser = user.UserName;
+            //        }
+            //        else
+            //        {
+            //            userfacev2.EmployeeATID = item.UserID;
+            //            userfacev2.CompanyIndex = user.CompanyIndex;
+            //            userfacev2.SerialNumber = param.SerialNumber;
+            //            userfacev2.Size = item.Face.Size;
+            //            userfacev2.Content = item.Face.Content;
+            //            userfacev2.UpdatedDate = DateTime.Now;
+            //            userfacev2.UpdatedUser = user.UserName;
+            //        }
+            //    }
+            //}
+            //context.SaveChanges();
+
+            result = Ok();
+            return result;
+        }
+
+        // TODO
+        // if you want to using this api please retest
+        [Authorize]
+        [ActionName("UpdateUserPrivilege")]
+        [HttpPost]
+        public IActionResult UpdateUserPrivilege([FromBody] List<AddedParam> addedParam)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = null;
+            if (user == null)
+            {
+                return Unauthorized("TokenExpired");
+            }
+            List<AddedParam> addedListParam = new List<AddedParam>();
+
+            if (addedParam != null)
+            {
+                var paramServiceType = addedParam.FirstOrDefault(p => p.Key == "ServiceType");
+                var paramPrivilege = addedParam.FirstOrDefault(p => p.Key == "Privilege");
+                var paramEmployeeIDs = addedParam.FirstOrDefault(p => p.Key == "EmployeeATIDs");
+
+                if (paramServiceType != null && paramServiceType.Value != null && paramPrivilege != null && paramPrivilege.Value != null && paramEmployeeIDs != null && paramEmployeeIDs.Value != null)
+                {
+
+                    // get all device of service type
+                    addedListParam.Add(new AddedParam { Key = "ServiceType", Value = paramServiceType.Value });
+                    var listServiceAndDevice = _iC_ServiceAndDeviceLogic.GetMany(addedListParam);
+
+                    // get all device with list serial number of the service
+                    addedListParam = new List<AddedParam>();
+                    addedListParam.Add(new AddedParam { Key = "ListSerialNumber", Value = listServiceAndDevice.Select(u => u.SerialNumber).ToList() });
+                    addedListParam.Add(new AddedParam { Key = "ListEmployeeATID", Value = paramEmployeeIDs });
+                    var listUserInfo = _iIC_UserInfoLogic.GetMany(addedListParam);
+
+
+                    var privilege = Convert.ToInt16(paramPrivilege.Value);
+                    if (paramServiceType.Value.ToString() == GlobalParams.ServiceType.PUSHInterfaceService && privilege == GlobalParams.DevicePrivilege.PUSHAdminRole)
+                    {
+                        privilege = GlobalParams.DevicePrivilege.PUSHAdminRole; // 14 is admin role using for push service update to device
+                    }
+
+                    if (listUserInfo != null)
+                    {
+                        foreach (var userInfo in listUserInfo)
+                        {
+                            userInfo.Privilege = privilege;
+                        }
+                        _iIC_UserInfoLogic.UpdateListUserPrivilege(listUserInfo);
+                        result = Ok();
+                    }
+                }
+                else
+                {
+                    result = BadRequest("UpdateUserPrivilegeError");
+                }
+            }
+            else
+            {
+                result = BadRequest("UpdateUserPrivilegeError");
+            }
+            return result;
+        }
+        [Authorize]
+        [ActionName("DeleteUserInfo")]
+        [HttpPost]
+        public IActionResult DeleteUserInfo([FromBody] ListUserAndFilter param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            string conn = configuration.GetConnectionString("connectionString");
+            try
+            {
+                _iIC_UserInfoLogic.Delete(param.listDevice, user.CompanyIndex);
+                result = Ok();
+            }
+            catch (Exception ex) { throw ex; }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("GetUserMachineInfo")]
+        [HttpPost]
+        public IActionResult GetUserMachineInfo([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<string> listUser = JsonConvert.DeserializeObject<List<string>>(addedParams.FirstOrDefault(e => e.Key == "ListEmployeeATID").Value.ToString());
+            List<string> listDevice = JsonConvert.DeserializeObject<List<string>>(addedParams.FirstOrDefault(e => e.Key == "ListDevice").Value.ToString());
+            var filter = addedParams.FirstOrDefault(e => e.Key == "Filter").Value.ToString();
+            string conn = configuration.GetConnectionString("connectionString");
+            try
+            {
+                List<IC_EmployeeDTO> listData = new List<IC_EmployeeDTO>();
+                ConfigObject config = ConfigObject.GetConfig(cache);
+                if (config.IntegrateDBOther == true)
+                {
+                    
+                    //List<string> listUser = (List<string>)addedParams.FirstOrDefault(e => e.Key == "ListEmployeeATID").Value;
+                    //List<string> listDevice = (List<string>)addedParams.FirstOrDefault(e => e.Key == "ListDevice").Value;
+                    //var filter = addedParams.FirstOrDefault(e => e.Key == "ListDevice").Value.ToString();
+                    //var baseOnCompare = addedParams.FirstOrDefault(e => e.Key == "BaseOn").Value.ToString();
+                    listData = _IHR_EmployeeLogic.GetUserMachineInfo(listUser, listDevice, filter, user); //GetUserInfo_IntegrateDB(param.listUser, config, user);
+                    return Ok(listData);
+                }
+
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "ListEmployeeATID", Value = listUser });
+                addedParams.Add(new AddedParam { Key = "ListDevice", Value = listDevice });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "Filter", Value = filter });
+
+                listData = _iIC_UserInfoLogic.GetUserInfoMany(addedParams);
+                #region old logic
+                //string select = "SELECT distinct";
+                //select += "\n" + "e.EmployeeATID,w.DepartmentIndex, e.EmployeeCode, e.FullName, d.[Name] AS DepartmentName,ISNULL(ui.UserName,'') as NameOnMachine, ISNULL(ui.CardNumber,'') as CardNumber, ISNULL(ui.Privilege,0) AS Privilege,ISNULL(ui.[Password], '') AS [Password],";
+                //select += "\n" + "(case when DATALENGTH(ut.FaceTemplate) > 0  then ISNULL(DATALENGTH(ut.FaceTemplate), 0) else ISNULL(DATALENGTH(utv2.Content), 0) end) AS FaceTemplate, ISNULL(ui.SerialNumber,'') as SerialNumber,";
+                //select += "\n" + "ISNULL(finger1.FingerData1,0) as Finger1, ISNULL(finger2.FingerData2,0) as Finger2, ISNULL(finger3.FingerData3,0) as Finger3, ISNULL(finger4.FingerData4,0) as Finger4, ISNULL(finger5.FingerData5,0) as Finger5,";
+                //select += "\n" + "ISNULL(finger6.FingerData6, 0) as Finger6, ISNULL(finger7.FingerData7, 0) as Finger7, ISNULL(finger8.FingerData8, 0) as Finger8, ISNULL(finger9.FingerData9, 0) as Finger9, ISNULL(finger10.FingerData10, 0) as Finger10, ISNULL(dv.AliasName,'') as AliasName";
+
+                //string from = "\n" + "FROM";
+                //from += "\n" + "dbo.IC_UserInfo ui RIGHT JOIN  dbo.IC_Employee e ON ui.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex ";
+                //from += "\n" + "LEFT JOIN dbo.IC_WorkingInfo w ON w.EmployeeATID = e.EmployeeATID AND w.CompanyIndex = e.CompanyIndex ";
+                //from += "\n" + "LEFT JOIN dbo.IC_UserFaceTemplate ut ON ut.EmployeeATID = ui.EmployeeATID AND ut.CompanyIndex = ui.CompanyIndex AND ui.SerialNumber = ut.SerialNumber ";
+                //from += "\n" + "LEFT JOIN dbo.IC_Department d ON w.DepartmentIndex = d.[Index] AND w.CompanyIndex = d.CompanyIndex ";
+                //from += "\n" + "LEFT JOIN dbo.IC_UserFaceTemplate_v2 utv2 ON utv2.EmployeeATID = ui.EmployeeATID AND utv2.CompanyIndex = ui.CompanyIndex AND ui.SerialNumber = utv2.SerialNumber";
+                //from += "\n" + "LEFT JOIN IC_Device dv on dv.SerialNumber = ui.SerialNumber and dv.CompanyIndex = ui.CompanyIndex";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData1 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex = 0) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger1";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData2 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex = 1) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger2";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData3 FROM dbo.IC_UserFinger usfg WHERE((usfg.FingerIndex = 2) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger3";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData4 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex = 3) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger4";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData5 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex = 4) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger5";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData6 FROM dbo.IC_UserFinger usfg WHERE((usfg.FingerIndex = 5) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger6";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData7 FROM dbo.IC_UserFinger usfg WHERE((usfg.FingerIndex = 6) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger7";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData8 FROM dbo.IC_UserFinger usfg WHERE((usfg.FingerIndex = 7) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger8";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData9 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex =8) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger9";
+                //from += "\n" + "OUTER APPLY( SELECT usfg.EmployeeATID, LEN(usfg.FingerData) AS FingerData10 FROM dbo.IC_UserFinger usfg WHERE ((usfg.FingerIndex = 9) AND (usfg.SerialNumber = ui.SerialNumber)) AND usfg.EmployeeATID = e.EmployeeATID AND ui.CompanyIndex = e.CompanyIndex) AS finger10";
+
+                //string where = "\n" + $"WHERE e.EmployeeATID in ({"'" + string.Join("','", param.listUser) + "'"}) AND (w.DepartmentIndex = 0 OR w.DepartmentIndex IN ({"'" + string.Join("','", user.ListDepartmentAssigned) + "'"}) ) AND e.CompanyIndex = {user.CompanyIndex} AND ((w.ToDate is null and Datediff(day, w.FromDate, GetDate()) >= 0 and w.Status = 1) OR (Datediff(day, w.ToDate, GetDate()) <= 0 AND Datediff(day, w.FromDate, GetDate()) >= 0) and w.Status = 1) ";
+                //        cmd.CommandTimeout = 0;
+
+
+                //string query = select + from + where;
+                //IC_EmployeeDTO userMachineInfo = new IC_EmployeeDTO();
+                //var lstRe = new List<IC_EmployeeDTO>();
+                //using (var connection = new SqlConnection(conn))
+                //{
+                //    connection.Open();
+                //    using (var cmd = connection.CreateCommand())
+                //    {
+                //        cmd.CommandText = query;
+                //        using (var reader = cmd.ExecuteReader())
+                //        {
+                //            if (reader.HasRows)
+                //            {
+                //                Dictionary<string, Type> column = new Dictionary<string, Type>();
+                //                int columnCount = reader.FieldCount;
+                //                var tableShema = reader.GetSchemaTable();
+                //                for (int ix = 0; ix < columnCount; ix++)
+                //                {
+                //                    var name = reader.GetName(ix);
+                //                    var type = reader.GetFieldType(ix);
+                //                    column.Add(name, type);
+                //                }
+                //                int Index = 1;
+                //                while (reader.Read())
+                //                {
+                //                    userMachineInfo = new IC_EmployeeDTO();
+                //                    userMachineInfo.Index = Index;
+                //                    foreach (var col in column)
+                //                    {
+                //                        var columns = reader[col.Key];
+                //                        var value = (columns is DBNull) ? null : Convert.ChangeType(columns, col.Value);
+
+                //                        switch (col.Key)
+                //                        {
+                //                            case "EmployeeATID":
+                //                                userMachineInfo.EmployeeATID = value.ToString();
+                //                                break;
+                //                            case "DepartmentIndex":
+                //                                userMachineInfo.DepartmentIndex = int.Parse(value.ToString());
+                //                                break;
+                //                            case "EmployeeCode":
+                //                                userMachineInfo.EmployeeCode = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "FullName":
+                //                                userMachineInfo.FullName = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "DepartmentName":
+                //                                userMachineInfo.DepartmentName = value == null ? "Không có phòng ban" : value.ToString();
+                //                                break;
+                //                            case "CardNumber":
+                //                                userMachineInfo.CardNumber = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "NameOnMachine":
+                //                                userMachineInfo.NameOnMachine = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "Privilege":
+                //                                userMachineInfo.Privilege = int.Parse(value.ToString());
+                //                                break;
+                //                            case "SerialNumber":
+                //                                userMachineInfo.SerialNumber = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "Password":
+                //                                userMachineInfo.Password = (value == null ? "" : value.ToString());
+                //                                break;
+                //                            case "Finger1":
+                //                                userMachineInfo.Finger1 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger2":
+                //                                userMachineInfo.Finger2 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger3":
+                //                                userMachineInfo.Finger3 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger4":
+                //                                userMachineInfo.Finger4 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger5":
+                //                                userMachineInfo.Finger5 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger6":
+                //                                userMachineInfo.Finger6 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger7":
+                //                                userMachineInfo.Finger7 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger8":
+                //                                userMachineInfo.Finger8 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger9":
+                //                                userMachineInfo.Finger9 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "Finger10":
+                //                                userMachineInfo.Finger10 = int.Parse(value.ToString());
+                //                                break;
+                //                            case "FaceTemplate":
+                //                                userMachineInfo.FaceTemplate = int.Parse(value.ToString());
+                //                                break;
+                //                            case "AliasName":
+                //                                userMachineInfo.AliasName = value.ToString();
+                //                                break;
+                //                            default:
+                //                                break;
+                //                        }
+                //                    }
+                //                    lstRe.Add(userMachineInfo);
+                //                    Index++;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+
+                #endregion
+                //if (listData != null && listData.Count > 0)
+                //{
+                //    listData = _IIC_EmployeeLogic.CheckCurrentDepartment(listData);
+                //}
+                result = Ok(listData);
+            }
+            catch (Exception ex) { throw ex; }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("ExportToExcel")]
+        [HttpPost]
+        public IActionResult ExportToExcel([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<string> listUser = JsonConvert.DeserializeObject<List<string>>(addedParams.FirstOrDefault(e => e.Key == "ListEmployeeATID").Value.ToString());
+            List<string> listDevice = JsonConvert.DeserializeObject<List<string>>(addedParams.FirstOrDefault(e => e.Key == "ListDevice").Value.ToString());
+            var filter = addedParams.FirstOrDefault(e => e.Key == "Filter").Value.ToString();
+            try
+            {
+                List<IC_EmployeeDTO> listData = new List<IC_EmployeeDTO>();
+                ConfigObject config = ConfigObject.GetConfig(cache);
+                if (config.IntegrateDBOther == true)
+                {
+                    listData = _IHR_EmployeeLogic.GetUserMachineInfo(listUser, listDevice, filter, user); //GetUserInfo_IntegrateDB(param.listUser, config, user);
+                    return Ok(listData);
+                }
+
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "ListEmployeeATID", Value = listUser });
+                addedParams.Add(new AddedParam { Key = "ListDevice", Value = listDevice });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "Filter", Value = filter });
+
+                listData = _iIC_UserInfoLogic.GetUserInfoMany(addedParams);
+
+                string sWebRootFolder = _hostingEnvironment.ContentRootPath;
+                string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, @"Files/UserOnDevice.xlsx");
+                FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, @"Files/UserOnDevice.xlsx"));
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("Userinfo");
+                    var currentRow = 1;
+                    worksheet.Cell(currentRow, 1).Value = "Mã chấm công (*)";
+                    worksheet.Cell(currentRow, 2).Value = "Tên trên máy";
+                    worksheet.Cell(currentRow, 3).Value = "Mã thẻ";
+                    worksheet.Cell(currentRow, 4).Value = "Mật khẩu";
+                    worksheet.Cell(currentRow, 5).Value = "Vân tay 1";
+                    worksheet.Cell(currentRow, 6).Value = "Vân tay 2";
+                    worksheet.Cell(currentRow, 7).Value = "Vân tay 3";
+                    worksheet.Cell(currentRow, 8).Value = "Vân tay 4";
+                    worksheet.Cell(currentRow, 9).Value = "Vân tay 5";
+                    worksheet.Cell(currentRow, 10).Value = "Vân tay 6";
+                    worksheet.Cell(currentRow, 11).Value = "Vân tay 7";
+                    worksheet.Cell(currentRow, 12).Value = "Vân tay 8";
+                    worksheet.Cell(currentRow, 13).Value = "Vân tay 9";
+                    worksheet.Cell(currentRow, 14).Value = "Vân tay 10";
+                    worksheet.Cell(currentRow, 15).Value = "Khuân mặt";
+
+                    for (int i = 1; i < 16; i++)
+                    {
+                        worksheet.Cell(1, i).Style.Fill.BackgroundColor = XLColor.Yellow;
+                        worksheet.Cell(1, i).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Column(i).Width = 20;
+                    }
+
+                    foreach (var users in listData)
+                    {
+                        currentRow++;
+                        worksheet.Cell(currentRow, 1).Value = users.EmployeeATID;
+                        worksheet.Cell(currentRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(currentRow, 1).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeATID.Length, '0');
+
+                        worksheet.Cell(currentRow, 2).Value = users.NameOnMachine;
+                        worksheet.Cell(currentRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 3).Value = users.CardNumber;
+                        worksheet.Cell(currentRow, 3).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if (!string.IsNullOrWhiteSpace(users.CardNumber))
+                            worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "0".PadLeft(users.CardNumber.Length, '0');
+
+                        worksheet.Cell(currentRow, 4).Value = users.Password;
+                        worksheet.Cell(currentRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if (!string.IsNullOrWhiteSpace(users.Password))
+                            worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0".PadLeft(users.Password.Length, '0');
+
+                        worksheet.Cell(currentRow, 5).Value = users.Finger1;
+                        worksheet.Cell(currentRow, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 6).Value = users.Finger2;
+                        worksheet.Cell(currentRow, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 7).Value = users.Finger3;
+                        worksheet.Cell(currentRow, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 8).Value = users.Finger4;
+                        worksheet.Cell(currentRow, 8).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 9).Value = users.Finger5;
+                        worksheet.Cell(currentRow, 9).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 10).Value = users.Finger6;
+                        worksheet.Cell(currentRow, 10).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 11).Value = users.Finger7;
+                        worksheet.Cell(currentRow, 11).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 12).Value = users.Finger8;
+                        worksheet.Cell(currentRow, 12).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 13).Value = users.Finger9;
+                        worksheet.Cell(currentRow, 13).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 14).Value = users.Finger10;
+                        worksheet.Cell(currentRow, 14).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 15).Value = users.FaceTemplate;
+                        worksheet.Cell(currentRow, 15).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+
+                    //var workbookBytes = new byte[0];
+                    //using (var ms = new MemoryStream())
+                    //{
+                    //    workbook.SaveAs(ms);
+                    //    return workbookBytes = ms.ToArray();
+                    //}
+                    workbook.SaveAs(file.FullName);
+                    return Ok(URL);
+                }
+
+               
+            }
+            catch (Exception ex) { return NotFound("TemplateError"); }
+        }
+
+        private List<UserMachineInfo> GetUserInfo_IntegrateDB(List<string> pListEmployeeATID, ConfigObject config, UserInfo user)
+        {
+            List<HR_EmployeeReport> listEmployee = EmployeeInfoController.GetEmployeeReportByEmps(otherContext, config, pListEmployeeATID);
+
+            List<IC_UserInfo> listUser = context.IC_UserInfo.Where(t => t.CompanyIndex == user.CompanyIndex && pListEmployeeATID.Contains(t.EmployeeATID)).ToList();
+            List<IC_UserFinger> listFinger = context.IC_UserFinger.Where(t => t.CompanyIndex == user.CompanyIndex && pListEmployeeATID.Contains(t.EmployeeATID)).ToList();
+            List<IC_UserFaceTemplate> listFace = context.IC_UserFaceTemplate.Where(t => t.CompanyIndex == user.CompanyIndex && pListEmployeeATID.Contains(t.EmployeeATID)).ToList();
+
+            List<UserMachineInfo> listData = new List<UserMachineInfo>();
+            int index = 0;
+            for (int i = 0; i < listEmployee.Count; i++)
+            {
+                UserMachineInfo data = null;
+                List<IC_UserInfo> listUserByEmployeeATID = listUser.Where(t => t.EmployeeATID == listEmployee[i].EmployeeATID).ToList();
+                if (listUserByEmployeeATID.Count > 0)
+                {
+                    foreach (IC_UserInfo item in listUserByEmployeeATID)
+                    {
+                        List<IC_UserFinger> listFingerByEmpAndSerial = listFinger.Where(t => t.EmployeeATID == listEmployee[i].EmployeeATID
+                             && t.SerialNumber == item.SerialNumber).ToList();
+                        List<IC_UserFaceTemplate> listFaceByEmpAndSerial = listFace.Where(t => t.EmployeeATID == listEmployee[i].EmployeeATID
+                             && t.SerialNumber == item.SerialNumber).ToList();
+
+                        data = new UserMachineInfo();
+                        data.Index = index + 1;
+
+                        CreateBasicInfo(ref data, listEmployee[i]);
+
+                        data.SerialNumber = item.SerialNumber;
+                        data.CardNumber = item.CardNumber;
+                        data.Privilege = int.Parse(item.Privilege.ToString());
+                        data.Password = item.Password;
+
+                        CreateListFingerData(listFingerByEmpAndSerial, ref data);
+                        data.FaceTemplate = listFaceByEmpAndSerial.Count == 0 ? 0 : listFaceByEmpAndSerial[i].FaceTemplate.Length;
+
+                        listData.Add(data);
+                        index++;
+                    }
+                }
+                else
+                {
+                    data = new UserMachineInfo();
+                    data.Index = index;
+
+                    CreateBasicInfo(ref data, listEmployee[i]);
+                    listData.Add(data);
+                    index++;
+                }
+
+            }
+            return listData;
+        }
+        private void CreateBasicInfo(ref UserMachineInfo data, HR_EmployeeReport pEmployee)
+        {
+            data.EmployeeATID = pEmployee.EmployeeATID;
+            data.EmployeeCode = pEmployee.EmployeeCode;
+            data.FullName = pEmployee.FullName;
+            data.DepartmentName = pEmployee.DepartmentName;
+        }
+        private void CreateListFingerData(List<IC_UserFinger> listFingerByEmp, ref UserMachineInfo data)
+        {
+            for (int i = 0; i < listFingerByEmp.Count; i++)
+            {
+                switch (listFingerByEmp[i].FingerIndex)
+                {
+                    case 0:
+                        data.Finger1 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 1:
+                        data.Finger2 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 2:
+                        data.Finger3 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 3:
+                        data.Finger4 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 4:
+                        data.Finger5 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 5:
+                        data.Finger6 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 6:
+                        data.Finger7 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 7:
+                        data.Finger8 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 8:
+                        data.Finger9 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                    case 9:
+                        data.Finger10 = listFingerByEmp[i].FingerData.Length;
+                        break;
+                }
+
+            }
+        }
+
+    }
+}

@@ -1,0 +1,895 @@
+﻿using EPAD_Backend_Core.WebUtilitys;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using EPAD_Data.Models;
+using EPAD_Common.Utility;
+using EPAD_Data;
+using EPAD_Logic.SendMail;
+using EPAD_Common;
+using EPAD_Data.Entities;
+using EPAD_Logic;
+using EPAD_Common.Types;
+using static EPAD_Data.Models.IC_SignalRDTO;
+using EPAD_Logic.MainProcess;
+
+namespace EPAD_Backend_Core.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class SystemCommandController : ControllerBase
+    {
+        private readonly EPAD_Context context;
+        private IMemoryCache cache;
+        private readonly IEmailProvider emailProvider;
+        private ezHR_Context otherContext;
+        private IIC_SystemCommandLogic _IIC_SystemCommandLogic;
+        private IIC_SignalRLogic _iC_SignalRLogic;
+        public SystemCommandController(EPAD_Context pContext, ezHR_Context pOtherContext, IMemoryCache pCache, IEmailProvider pEmailProvider,
+            IIC_SystemCommandLogic iIC_SystemCommandLogic,
+            IIC_SignalRLogic iC_SignalRLogic
+            )
+        {
+            context = pContext;
+            otherContext = pOtherContext;
+            cache = pCache;
+            emailProvider = pEmailProvider;
+            _IIC_SystemCommandLogic = iIC_SystemCommandLogic;
+            _iC_SignalRLogic = iC_SignalRLogic;
+
+        }
+
+        [Authorize]
+        [ActionName("AddSystemCommand")]
+        [HttpPost]
+        public IActionResult AddSystemCommand([FromBody] SystemCommandParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (SystemCommandParam)Misc.RemoveWhiteSpace(param);
+            if (param.SerialNumber == "")
+            {
+                return BadRequest("PleaseFillAllRequiredFields");
+            }
+
+            IC_SystemCommand command = new IC_SystemCommand();
+            command.SerialNumber = param.SerialNumber;
+            command.CommandName = param.CommandName;
+            command.Command = param.Command;
+            command.Params = param.Params;
+
+            command.EmployeeATIDs = param.EmployeeATIDs;
+            command.RequestedTime = param.RequestedTime;
+            command.ExcutedTime = param.ExcutedTime;
+            command.Excuted = false;
+
+            command.CompanyIndex = user.CompanyIndex;
+            command.CreatedDate = DateTime.Now;
+            command.UpdatedDate = DateTime.Now;
+            command.UpdatedUser = user.UserName;
+
+            context.IC_SystemCommand.Add(command);
+            context.SaveChanges();
+
+            result = Ok();
+            return result;
+        }
+
+        internal static void PostPushNotification()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Authorize]
+        [ActionName("DeleteSystemCommand")]
+        [HttpPost]
+        public IActionResult DeleteSystemCommand([FromBody] SystemCommandParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            IC_SystemCommand deleteData = context.IC_SystemCommand.Where(t => t.Index == param.Index).FirstOrDefault();
+            if (deleteData == null)
+            {
+                return NotFound("ServiceNotExist");
+            }
+
+            context.IC_SystemCommand.Remove(deleteData);
+            context.SaveChanges();
+
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("GetSystemCommandNeedExecute")]
+        [HttpPost]
+        public IActionResult GetSystemCommandNeedExecute(SerialNumberInfos lsSerialNumber)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<CommandResult> listData = new List<CommandResult>();
+            DateTime now = DateTime.Now;
+            try
+            {
+                if (lsSerialNumber != null)
+                {
+                    UpdateLastConnection(lsSerialNumber.ListSerialNumber, user.CompanyIndex);
+                }
+
+                listData = user.GetSomeCommandsUnExcute(GlobalParams.COMMAND_NUMBER_RETURN_PUSH, lsSerialNumber).Where(t => t.ID != null).ToList();
+
+                if (listData.Count > 0)
+                {
+                    List<RemoteProcessLogObject> listLogs = new List<RemoteProcessLogObject>();
+
+                    result = Ok(listData);
+                    List<int> listCmdIndex = new List<int>();
+                    for (int i = 0; i < listData.Count; i++)
+                    {
+                        listCmdIndex.Add(int.Parse(listData[i].ID));
+                        RemoteProcessLogObject log = new RemoteProcessLogObject(user, listData[i], "", CommandStatus.UnExecute.ToString(), now);
+                        log.Action = "GetSystemCommandNeedExecute";
+                        listLogs.Add(log);
+                    }
+
+                    //ghi log 
+                    if (listLogs.Count > 0)
+                    {
+                        MongoDBHelper<RemoteProcessLogObject> mongoObject = new MongoDBHelper<RemoteProcessLogObject>("process_log", cache);
+                        mongoObject.AddListDataToCollection(listLogs, true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode((int)HttpStatusCode.InternalServerError, ex.ToString());
+                listData = new List<CommandResult>();
+            }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateCommandStatus")]
+        [HttpPost]
+        public IActionResult UpdateSystemCommandStatus([FromBody] List<CommandParam> listParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            List<RemoteProcessLogObject> listLogs = new List<RemoteProcessLogObject>();
+            DateTime now = DateTime.Now;
+            List<string> listGroupIndex = new List<string>();
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            CompanyInfo companyInfo = CompanyInfo.GetFromCache(cache, user.CompanyIndex.ToString());
+
+            for (int i = 0; i < listParams.Count; i++)
+            {
+                CommandResult cmd = new CommandResult();
+                // cập nhật status cho cmd của service
+                if (user.UpdateStatusCommand(int.Parse(listParams[i].ID), listParams[i].Status, listParams[i].Error, ref cmd, context, otherContext, config) == true)
+                {
+                    if (listGroupIndex.Contains(cmd.GroupIndex) == false)
+                    {
+                        listGroupIndex.Add(cmd.GroupIndex);
+                    }
+                    RemoteProcessLogObject log = new RemoteProcessLogObject(user, cmd, listParams[i].SDKFuntion, listParams[i].Status, now);
+                    log.Action = "UpdateCommandStatus";
+                    listLogs.Add(log);
+                }
+            }
+            // cập nhật group command
+
+            if (companyInfo != null)
+            {
+
+                List<CommandGroup> listGroupInParam = companyInfo.ListCommandGroups.Where(t => listGroupIndex.Contains(t.ID)).ToList();
+                List<string> listGroupDeleteIndex = new List<string>();
+                //CheckGroupHasError(ref listGroupInParam);
+                for (int i = 0; i < listGroupInParam.Count; i++)
+                {
+                    // xóa cmd trong company cache nếu status = success
+                    UpdateCommandInCompanyCache(listParams, listGroupInParam[i].ID, companyInfo, now);
+                    // nếu tất cả command trong group hoàn thành thì update group
+                    List<CommandResult> listCommandResult = listGroupInParam[i].ListCommand;
+
+                    bool allFinished = true;
+                    for (int j = 0; j < listCommandResult.Count; j++)
+                    {
+                        if (listCommandResult[j].Status == CommandStatus.UnExecute.ToString() || listCommandResult[j].Status == CommandStatus.Executing.ToString())
+                        {
+                            allFinished = false;
+                            break;
+                        }
+                        else if (listCommandResult[j].Error != null && listCommandResult[j].Error != "")
+                        {
+                            listGroupInParam[i].Errors.Add(listCommandResult[j].Error);
+                        }
+
+                    }
+                    DeleteCommandInCompanyCache(listCommandResult, listGroupInParam[i].ID, companyInfo, now);
+
+                    var checkallFinished = context.IC_SystemCommand.Where(t => t.GroupIndex.Equals(int.Parse(listGroupInParam[i].ID)) && t.Excuted == false).ToList();
+                    if (checkallFinished != null && checkallFinished.Count > 0)
+                    {
+                        allFinished = false;
+                    }
+                    else
+                    {
+                        allFinished = true;
+                    }
+
+                    if (allFinished == true)
+                    {
+                        listGroupInParam[i].Excuted = true;
+                        listGroupInParam[i].FinishedTime = now;
+                        listGroupDeleteIndex.Add(listGroupInParam[i].ID);
+                        int index = int.Parse(listGroupInParam[i].ID);
+                        IC_CommandSystemGroup groupModel = context.IC_CommandSystemGroup.Where(t => t.Index == index).FirstOrDefault();
+
+                        if (groupModel != null)
+                        {
+                            groupModel.Excuted = true;
+                            groupModel.UpdatedDate = now;
+
+                            //Cập nhật IsSync trong IC_EmployeeTransfer
+                            try
+                            {
+                                if (groupModel.EventType.Equals(ConfigAuto.ADD_OR_DELETE_USER.ToString()))
+                                {
+                                    var systemCommands = context.IC_SystemCommand.Where(t => t.CompanyIndex.Equals(user.CompanyIndex) && t.GroupIndex.Equals(groupModel.Index)).ToList();
+                                    if (systemCommands != null && systemCommands.Count > 0)
+                                    {
+                                        foreach (var systemCommand in systemCommands)
+                                        {
+                                            if (string.IsNullOrEmpty(systemCommand.Error))
+                                            {
+                                                CommandParamDB employees = JsonConvert.DeserializeObject<CommandParamDB>(systemCommand.Params, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                                                foreach (var employee in employees.ListUsers)
+                                                {
+<<<<<<< HEAD
+                                                    IC_EmployeeTransfer employeeTransfer = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex.Equals(user.CompanyIndex) && t.EmployeeATID.Equals(employee.UserID)).FirstOrDefault();
+=======
+                                                    Models.IC_EmployeeTransfer employeeTransfer = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex.Equals(user.CompanyIndex) && t.EmployeeATID.Equals(employee.UserID.PadLeft(config.MaxLenghtEmployeeATID,'0'))).FirstOrDefault();
+>>>>>>> ver2
+                                                    employeeTransfer.IsSync = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    context.SaveChanges();
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+
+                            //groupModel.UpdatedUser = user.UserName;
+                        }
+
+                        try
+                        {
+                            var listSerialCommand = context.IC_SystemCommand.Where(t => t.CompanyIndex.Equals(groupModel.CompanyIndex) && t.GroupIndex.Equals(groupModel.Index) && t.Command.Equals(groupModel.GroupName)).ToList();
+
+                            List<IntergateLogParam> lsIntergateLog = new List<IntergateLogParam>();
+                            foreach (var item in listSerialCommand)
+                            {
+                                lsIntergateLog.Add(new IntergateLogParam()
+                                {
+                                    SerialNumber = item.SerialNumber,
+                                    FromTIme = JsonConvert.DeserializeObject<CommandParamDB>(item.Params).FromTime,
+                                    ToTime = JsonConvert.DeserializeObject<CommandParamDB>(item.Params).ToTime
+                                });
+                            }
+
+                            //List<IntergateLogParam> lsIntergateLog = listSerialCommand.Select(t => new { t.SerialNumber, JsonConvert.DeserializeObject<CommandParamDB>(t.Params).FromTime, JsonConvert.DeserializeObject<CommandParamDB>(t.Params).ToTime }).Cast<IntergateLogParam>().ToList();
+
+                            //var listSerialCommandRestartService = context.IC_SystemCommand.Where(t => t.CompanyIndex.Equals(groupModel.CompanyIndex) && t.GroupIndex.Equals(groupModel.Index) && t.Command.Equals("RESTART_SERVICE"));
+
+                            //listSerialCommand.AddRange(listSerialCommandRestartService);
+
+                            List<SerialNumberCommandParam> listSerialCommandResult = new List<SerialNumberCommandParam>();
+
+                            string notification = "";
+
+                            foreach (var item in listSerialCommand)
+                            {
+                                GetResultCommand(item.Command, item.Error, ref notification, lsIntergateLog, user.CompanyIndex, listGroupInParam[i]);
+
+                                listSerialCommandResult.Add(new SerialNumberCommandParam()
+                                {
+                                    SerialNumber = item.SerialNumber,
+                                    Result = notification,
+                                    Erorr = item.Error
+                                });
+                            }
+
+                            if (listSerialCommandResult != null && listSerialCommandResult.Count > 0)
+                            {
+                                _iC_SignalRLogic.PostPushNotification(user.CompanyIndex, listSerialCommandResult);
+                            }
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                    }
+                }
+                context.SaveChanges();
+                // send mail process
+                for (int i = 0; i < listGroupInParam.Count; i++)
+                {
+                    if (listGroupInParam[i].Excuted && listGroupInParam[i].EventType != "")
+                    {
+                        var checkConfig = context.IC_CommandSystemGroup.Where(t => t.Index.Equals(Convert.ToInt32(listGroupInParam[i].ID)) && t.UpdatedUser.Contains("SYSTEM_AUTO_")).FirstOrDefault();
+                        if (checkConfig != null)
+                        {
+                            try
+                            {
+                                emailProvider.SendMailConfigProcessDoneGroup(listGroupInParam[i], checkConfig.UpdatedUser.Split('_')[2].ToString());
+                            }
+                            catch (Exception) { }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                emailProvider.SendMailConfigProcessDone(listGroupInParam[i]);
+                            }
+                            catch (Exception) { }
+                        }
+                    }
+                }
+                // remove group in cache
+                for (int i = 0; i < listGroupDeleteIndex.Count; i++)
+                {
+                    companyInfo.DeleteGroupById(listGroupDeleteIndex[i]);
+                }
+            }
+            //ghi log 
+            MongoDBHelper<RemoteProcessLogObject> mongoObject = new MongoDBHelper<RemoteProcessLogObject>("process_log", cache);
+            mongoObject.AddListDataToCollection(listLogs, true);
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("GetDeviceInfo")]
+        [HttpPost]
+        public IActionResult GetDeviceInfo([FromBody] List<string> listParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            DateTime now = DateTime.Now;
+            List<CommandResult> listCommandResult = CommandProcess.CreateListCommands(context,listParams, CommandAction.GetDeviceInfo, "", now, now, null,false, GlobalParams.DevicePrivilege.SDKStandardRole);
+            CommandProcess.CreateGroupCommand(context, cache, user.CompanyIndex, user.UserName, "GetDeviceInfo", "", listCommandResult, "");
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateCommandExcuting")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateCommandExcuting([FromBody] List<CommandParam> listParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            try
+            {
+                List<string> listID = listParams.Select(x => x.ID).ToList();
+                List<IC_SystemCommand> listCommand = context.IC_SystemCommand.Where(t => listID.Contains(t.Index.ToString())).ToList();
+                for (int i = 0; i < listCommand.Count; i++)
+                {
+                    listCommand[i].ExcutingServiceIndex = user.Index;
+                }
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode(500, ex.ToString());
+            }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateLastConnectionBySDK")]
+        [HttpPost]
+        public IActionResult UpdateLastConnectionBySDK(SerialNumberInfos lsSerialNumber)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            try
+            {
+                if (lsSerialNumber != null)
+                {
+                    UpdateLastConnection(lsSerialNumber.ListSerialNumber, user.CompanyIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode(500, ex.ToString());
+            }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("PostPage")]
+        [HttpPost]
+        public IActionResult PostPage([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            try
+            {
+                List<IC_SystemCommandDTO> listCommand = new List<IC_SystemCommandDTO>();
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+
+                ListDTOModel<IC_SystemCommandDTO> listData = _IIC_SystemCommandLogic.GetPage(addedParams);
+                DataGridClass dataGrid = new DataGridClass(listData.TotalCount, listData.Data); ;
+
+                return Ok(dataGrid);
+
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode(500, ex.ToString());
+            }
+            return result;
+        }
+        [Authorize]
+        [ActionName("GetPage")]
+        [HttpGet]
+        public IActionResult GetPage(string filter)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            try
+            {
+                var addedParams = JsonConvert.DeserializeObject<List<AddedParam>>(filter);
+                List<IC_SystemCommandDTO> listCommand = new List<IC_SystemCommandDTO>();
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+
+                ListDTOModel<IC_SystemCommandDTO> listData = _IIC_SystemCommandLogic.GetPage(addedParams);
+                DataGridClass dataGrid = new DataGridClass(listData.TotalCount, listData.Data); ;
+
+                return Ok(dataGrid);
+
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode(500, ex.ToString());
+            }
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("DeleteList")]
+        [HttpPost]
+        public IActionResult DeleteList([FromBody] List<IC_SystemCommandDTO> listSystemCommand)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Ok();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            try
+            {
+                _IIC_SystemCommandLogic.DeleteSystemCommandCacheAndDataBase(listSystemCommand);
+                result = Ok();
+            }
+            catch (Exception ex)
+            {
+                result = StatusCode(500, ex.ToString());
+            }
+            return result;
+        }
+
+
+
+        [NonAction]
+        private void UpdateCommandInCompanyCache(List<CommandParam> pListCommand, string pGroupIndex, CompanyInfo companyInfo, DateTime pNow)
+        {
+            for (int i = 0; i < pListCommand.Count; i++)
+            {
+                companyInfo.UpdateCommandById(pListCommand[i].ID, pGroupIndex, pListCommand[i].Status, pListCommand[i].Error, pNow);
+            }
+        }
+
+        [NonAction]
+        private void DeleteCommandInCompanyCache(List<CommandResult> pListCommand, string pGroupIndex, CompanyInfo companyInfo, DateTime pNow)
+        {
+            for (int i = 0; i < pListCommand.Count; i++)
+            {
+                if (pListCommand[i].Status == CommandStatus.Success.ToString() || pListCommand[i].Status == CommandStatus.Failed.ToString())
+                {
+                    companyInfo.DeleteCommandById(pListCommand[i].ID, pGroupIndex);
+                }
+            }
+        }
+
+        [NonAction]
+        private void CheckGroupHasError(ref List<CommandGroup> listGroupInParam)
+        {
+            for (int i = 0; i < listGroupInParam.Count; i++)
+            {
+                List<CommandResult> lstCmdResult = listGroupInParam[i].ListCommand;
+                for (int ix = 0; ix < lstCmdResult.Count; ix++)
+                {
+                    if (lstCmdResult[i].Error != null && lstCmdResult[i].Error != "")
+                    {
+                        listGroupInParam[i].Errors.Add(lstCmdResult[i].Error);
+                    }
+                }
+            }
+        }
+
+        [NonAction]
+        private void UpdateLastConnection(List<string> lsSerialNumber, int CompanyIndex)
+        {
+            if (lsSerialNumber != null && lsSerialNumber.Count > 0)
+            {
+                foreach (var item in lsSerialNumber)
+                {
+                    var device = context.IC_Device.Where(t => t.CompanyIndex == CompanyIndex && t.SerialNumber == item).FirstOrDefault();
+                    if (device != null)
+                    {
+                        device.LastConnection = DateTime.Now;
+                    }
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        [NonAction]
+        public void PostPushNotification(int CompanyIndex, List<SerialNumberCommandParam> pNotification)
+        {
+            Notification notification = new Notification()
+            {
+                CompanyIndex = CompanyIndex,
+                Message = pNotification
+            };
+            var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(3);
+            client.BaseAddress = new Uri(ConfigObject.GetConfig(cache).PushNotificatioinLink);
+            var json = JsonConvert.SerializeObject(notification);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = client.PostAsync("api/Notification", content).Result;
+        }
+
+        [NonAction]
+        public void GetResultCommand(string pCommand, string pError, ref string pResultNotification, List<IntergateLogParam> logParams, int CompanyIndex, CommandGroup command)
+        {
+            switch (pCommand)
+            {
+                case GlobalParams.ValueFunction.GetDeviceInfo:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "GetDeviceInfoSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "GetDeviceInfoFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadLogFromToTime:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        try
+                        {
+                            //Khi tải log manual thì tích hợp log
+                            if (command.Excuted && command.EventType == "")
+                            {
+                                IntergateLogManual(logParams, CompanyIndex);
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+                        pResultNotification = "DownloadLogFromToTimeSuccess";
+
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadLogFromToTimeFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadAllLog:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DownloadAllLogSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadAllLogFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.UploadUsers:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "UploadUsersSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "UploadUsersFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DeleteAllUser:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DeleteAllUsersSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DeleteAllUsersFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DeleteLogFromToTime:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DeleteLogFromToTimeSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DeleteLogFromToTimeFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.RestartDevice:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "RestartDeviceSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "RestartDeviceFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadUserById:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DownloadUserByIdSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadUserByIdFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadAllUser:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DownloadAllUserSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadAllUserFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DeleteAllLog:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DeleteAllLogSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DeleteAllLogFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DeleteUserById:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DeleteUserByIdSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DeleteUserByIdFail";
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DeleteAllFingerPrint:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DeleteAllFingerPrintSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DeleteAllFingerPrintFail";
+
+                    }
+                    break;
+                case GlobalParams.ValueFunction.RESTART_SERVICE:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "RESTART_SERVICESuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "RESTART_SERVICEFail";
+
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadAllUserMaster:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DownloadAllUserMasterSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadAllUserMasterFail";
+
+                    }
+                    break;
+                case GlobalParams.ValueFunction.DownloadUserMasterById:
+                    if (string.IsNullOrEmpty(pError))
+                    {
+                        pResultNotification = "DownloadUserMasterByIdSuccess";
+                    }
+                    else
+                    {
+                        pResultNotification = "DownloadUserMasterByIdFail";
+
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        [NonAction]
+        public void IntergateLogManual(List<IntergateLogParam> lsparam, int CompanyIndex)
+        {
+            IC_Config cfg = context.IC_Config.Where(x => x.EventType == ConfigAuto.INTEGRATE_LOG.ToString() && x.CompanyIndex == CompanyIndex).FirstOrDefault();
+            IntegrateLogParam param = JsonConvert.DeserializeObject<IntegrateLogParam>(cfg.CustomField);
+            List<AttendanceLog> listLogParam = new List<AttendanceLog>();
+            IntegrateTimeLogParam logParam = new IntegrateTimeLogParam();
+            IntegrateLogMongo logMongo = new IntegrateLogMongo();
+
+            if (param.LinkAPI != null && param.LinkAPI != "")
+            {
+                string apiLink = param.LinkAPI;
+                apiLink = apiLink + (apiLink.EndsWith("/") ? "" : "/");
+                foreach (var item in lsparam)
+                {
+                    List<IC_AttendanceLog> listLogDB = context.IC_AttendanceLog.Where(t => t.CompanyIndex == cfg.CompanyIndex
+                   && t.CheckTime >= item.FromTIme && t.CheckTime <= item.ToTime && t.SerialNumber == item.SerialNumber).ToList();
+                    List<IC_Device> listDevice = context.IC_Device.Where(t => t.CompanyIndex == CompanyIndex).ToList();
+
+                    logMongo.IntegrateTime = DateTime.Now;
+                    logMongo.LogCount = listLogDB.Count;
+                    logMongo.Param = param;
+                    logMongo.Success = false;
+                    logMongo.CompanyIndex = cfg.CompanyIndex;
+
+                    logParam.WriteToDatabase = param.WriteToDatabase;
+                    logParam.WriteToFile = param.WriteToFile;
+                    logParam.WriteToFilePath = param.WriteToFilePath;
+                    logParam.IntegrateTime = $"{DateTime.Now.Hour.ToString().PadLeft(2, '0')}:{DateTime.Now.Minute.ToString().PadLeft(2, '0')}"; ;
+                    for (int i = 0; i < listLogDB.Count; i++)
+                    {
+                        AttendanceLog log = new AttendanceLog();
+                        log.EmployeeATID = listLogDB[i].EmployeeATID;
+                        log.SerialNumber = listLogDB[i].SerialNumber;
+                        log.CheckTime = listLogDB[i].CheckTime;
+                        log.VerifyMode = listLogDB[i].VerifyMode;
+
+                        log.InOutMode = listLogDB[i].InOutMode;
+                        log.WorkCode = listLogDB[i].WorkCode;
+                        log.Reserve1 = listLogDB[i].Reserve1;
+                        log.UpdatedDate = listLogDB[i].UpdatedDate;
+
+                        IC_Device device = listDevice.Find(t => t.SerialNumber == log.SerialNumber);
+                        if (device != null)
+                        {
+                            log.DeviceName = device.AliasName;
+                        }
+
+                        listLogParam.Add(log);
+                    }
+                }
+
+                logParam.ListLogs = listLogParam;
+
+                var client = new HttpClient();
+                client.BaseAddress = new Uri(apiLink);
+                var json = JsonConvert.SerializeObject(logParam);
+
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                try
+                {
+                    HttpResponseMessage response = client.PostAsync("api/TA_Timelog/SaveListTimeLog", content).Result;
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        logMongo.Success = true;
+                    }
+                    else
+                    {
+                        logMongo.Success = false;
+                    }
+                    string data = response.Content.ReadAsStringAsync().Result;
+                    IntegrateLogResult logResult = JsonConvert.DeserializeObject<IntegrateLogResult>(data);
+
+                    try
+                    {
+                        emailProvider.SendMailIntegrateLog(cfg, logResult.SuccessDB, logResult.ErrorsDB, logResult.SuccessFile, logResult.ErrorsFile);
+                    }
+                    catch (Exception) { }
+                }
+                catch (Exception ex)
+                {
+                    logMongo.Error = ex.Message;
+                }
+
+                //ghi log 
+                MongoDBHelper<IntegrateLogMongo> mongoObject = new MongoDBHelper<IntegrateLogMongo>("log_integrate", cache);
+                mongoObject.AddDataToCollection(logMongo, true);
+            }
+        }
+
+        [NonAction]
+        public void WriteLog(string content)
+        {
+            //string projectRootPath = _hostingEnvironment.ContentRootPath;
+            //string fullPath = projectRootPath + @"\LogBackEnd\" + DateTime.Now.ToString("yyyyMMdd") + @"\";
+            //if (Directory.Exists(fullPath) == false)
+            //{
+            //    Directory.CreateDirectory(fullPath);
+            //}
+            //fullPath += DateTime.Now.ToString("yyyyMMdd").Replace(":", "") + ".txt";
+            //using (StreamWriter sw = System.IO.File.CreateText(fullPath))
+            //{
+            //    sw.WriteLine(content);
+            //}
+        }
+
+    }
+}

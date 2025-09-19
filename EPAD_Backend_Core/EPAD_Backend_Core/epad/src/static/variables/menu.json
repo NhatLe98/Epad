@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "key": "Home",
+    "name": "Home",
+    "path": "",
+    "icon": "home.png",
+    "group": "Home"
+  },
+  {
+    "id": 2,
+    "key": "Department",
+    "name": "Department",
+    "path": "",
+    "icon": "department.png",
+    "group": "Home"
+  },
+  {
+    "id": 3,
+    "key": "AutoSynchUser",
+    "name": "UserManagement",
+    "path": "",
+    "icon": "usermanagement.png",
+    "group": "Home"
+  },
+  {
+    "id": 4,
+    "key": "GroupAccount",
+    "name": "GroupAccount",
+    "path": "",
+    "icon": "usermanagement.png",
+    "group": "Home"
+  },
+  {
+    "id": 5,
+    "key": "LoginAccount",
+    "name": "LoginAccount",
+    "path": "",
+    "icon": "usermanagement.png",
+    "group": "Home"
+  },
+  {
+    "id": 6,
+    "key": "LogMonitoring",
+    "name": "LogMonitoringOnline",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 7,
+    "key": "SystemConfig",
+    "name": "Configuration",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 8,
+    "key": "ChangeDepartment",
+    "name": "ChangeDepartment",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 9,
+    "key": "Machine",
+    "name": "ListMachine",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 10,
+    "key": "Service",
+    "name": "ListService",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 11,
+    "key": "DevicesByService",
+    "name": "DevicesByService",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 12,
+    "key": "HistoryUser",
+    "name": "HistoryUser",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 13,
+    "key": "TrackingSystem",
+    "name": "TrackingSystems",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 14,
+    "key": "DeviceInfo",
+    "name": "DeviceInfo",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 15,
+    "key": "AssignPrivilegeUserGroup",
+    "name": "AssignPrivilegeUserGroup",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  },
+  {
+    "id": 16,
+    "key": "GroupDevice",
+    "name": "GroupDevice",
+    "path": "",
+    "icon": "settings.png",
+    "group": ""
+  },
+  {
+    "id": 17,
+    "key": "ListGroupDevice",
+    "name": "ListGroupDevice",
+    "path": "",
+    "icon": "settings.png",
+    "group": ""
+  },
+  {
+    "id": 18,
+    "key": "SystemConfigGroupDevice",
+    "name": "SystemConfigGroupDevice",
+    "path": "",
+    "icon": "settings.png",
+    "group": ""
+  },
+  {
+    "id": 19,
+    "key": "Controller",
+    "name": "Controller",
+    "path": "",
+    "icon": "settings.png",
+    "group": ""
+  },
+  {
+    "id": 20,
+    "key": "TrackingIntegrate",
+    "name": "TrackingIntegrate",
+    "path": "",
+    "icon": "settings.png",
+    "group": "Home"
+  }
+]

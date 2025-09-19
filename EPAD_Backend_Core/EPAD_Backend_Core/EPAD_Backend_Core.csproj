@@ -1,0 +1,1140 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+	  <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <IsPackable>false</IsPackable>
+    <SpaRoot>epad\</SpaRoot>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    <UserSecretsId>f1d6b031-f30d-4666-bfa2-06e84c7943ad</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702</NoWarn>
+    <WarningLevel>2</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\DeviceController_BACKUP_12152.cs" />
+    <Compile Remove="Controllers\DeviceController_BACKUP_6528.cs" />
+    <Compile Remove="Controllers\DeviceController_BASE_12152.cs" />
+    <Compile Remove="Controllers\DeviceController_BASE_6528.cs" />
+    <Compile Remove="Controllers\DeviceController_LOCAL_12152.cs" />
+    <Compile Remove="Controllers\DeviceController_LOCAL_6528.cs" />
+    <Compile Remove="Controllers\DeviceController_REMOTE_12152.cs" />
+    <Compile Remove="Controllers\DeviceController_REMOTE_6528.cs" />
+    <Compile Remove="Controllers\ServiceController - Copy.cs" />
+    <Compile Remove="WebUtilitys\InstanseService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Grpc\Protos\epad.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="1" Version="1.0.0" />
+    <PackageReference Include="AbriDeviceHelper" Version="1.0.1" />
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="ChilkatDnCore" Version="9.5.0.84" />
+    <PackageReference Include="ClosedXML" Version="0.95.4" />
+    <PackageReference Include="EfCore.SqlServer2008Query" Version="1.0.4" />
+    <PackageReference Include="FreeSpire.Office" Version="4.3.1" />
+    <PackageReference Include="FreeSpire.XLS" Version="12.2.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.39.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+    <PackageReference Include="NPOI" Version="2.5.4" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
+    <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.1.5" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="5.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="CacheData\**" />
+    <Compile Remove="Controllers\OldController\**" />
+    <Compile Remove="DAL\**" />
+    <Compile Remove="epad\**" />
+    <Compile Remove="Migrations\**" />
+    <Content Remove="$(SpaRoot)**" />
+    <Content Remove="CacheData\**" />
+    <Content Remove="Controllers\OldController\**" />
+    <Content Remove="DAL\**" />
+    <Content Remove="epad\**" />
+    <Content Remove="Migrations\**" />
+    <EmbeddedResource Remove="CacheData\**" />
+    <EmbeddedResource Remove="Controllers\OldController\**" />
+    <EmbeddedResource Remove="DAL\**" />
+    <EmbeddedResource Remove="epad\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <None Remove="$(SpaRoot)**" />
+    <None Remove="CacheData\**" />
+    <None Remove="Controllers\OldController\**" />
+    <None Remove="DAL\**" />
+    <None Remove="epad\**" />
+    <None Remove="Migrations\**" />
+    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Controllers\IC\IC_EmployeeInfoController.cs.orig" />
+    <None Remove="epad\.browserslistrc" />
+    <None Remove="epad\.env" />
+    <None Remove="epad\.gitignore" />
+    <None Remove="epad\.vscode\launch.json" />
+    <None Remove="epad\babel.config.js" />
+    <None Remove="epad\debug.log" />
+    <None Remove="epad\dist\assets\css\app.e0cbcfd3.css" />
+    <None Remove="epad\dist\assets\css\chunk-0bcea778.3c36838a.css" />
+    <None Remove="epad\dist\assets\css\chunk-0e75cda0.e84524df.css" />
+    <None Remove="epad\dist\assets\css\chunk-1359bc7d.47a8b25e.css" />
+    <None Remove="epad\dist\assets\css\chunk-198aab40.e37bdedf.css" />
+    <None Remove="epad\dist\assets\css\chunk-1a219aa7.1d0c44d6.css" />
+    <None Remove="epad\dist\assets\css\chunk-260e6521.6b88e650.css" />
+    <None Remove="epad\dist\assets\css\chunk-2ad2d9a7.1fc9b48a.css" />
+    <None Remove="epad\dist\assets\css\chunk-35710b23.63e0e88f.css" />
+    <None Remove="epad\dist\assets\css\chunk-3a15f3d0.160368a8.css" />
+    <None Remove="epad\dist\assets\css\chunk-4bef70ea.69f000a5.css" />
+    <None Remove="epad\dist\assets\css\chunk-4c1c7469.49bc5bc6.css" />
+    <None Remove="epad\dist\assets\css\chunk-4d4f684b.e6bf934d.css" />
+    <None Remove="epad\dist\assets\css\chunk-522447ce.a0a5fca5.css" />
+    <None Remove="epad\dist\assets\css\chunk-53d96caf.1ded63b2.css" />
+    <None Remove="epad\dist\assets\css\chunk-5bfd5386.a4cda454.css" />
+    <None Remove="epad\dist\assets\css\chunk-66408d36.36d041e1.css" />
+    <None Remove="epad\dist\assets\css\chunk-667674c8.49bc5bc6.css" />
+    <None Remove="epad\dist\assets\css\chunk-6ccc4eb3.3cb81ee0.css" />
+    <None Remove="epad\dist\assets\css\chunk-718c5c0b.940d0071.css" />
+    <None Remove="epad\dist\assets\css\chunk-794ca5b9.b07d839f.css" />
+    <None Remove="epad\dist\assets\css\chunk-7d513f1e.20fc7ecd.css" />
+    <None Remove="epad\dist\assets\css\chunk-7ec8787e.189eec4e.css" />
+    <None Remove="epad\dist\assets\css\chunk-97d3281c.e423e45c.css" />
+    <None Remove="epad\dist\assets\css\chunk-a568bd3a.d5eda3a5.css" />
+    <None Remove="epad\dist\assets\css\chunk-acdae112.581b7bcd.css" />
+    <None Remove="epad\dist\assets\css\chunk-afbd3b3e.5406ee85.css" />
+    <None Remove="epad\dist\assets\css\chunk-b7c8e8da.708df2c8.css" />
+    <None Remove="epad\dist\assets\css\chunk-d455223c.fa10c2a5.css" />
+    <None Remove="epad\dist\assets\css\chunk-d4ad6ab4.8fe5babf.css" />
+    <None Remove="epad\dist\assets\css\chunk-d8fae626.e8c787d7.css" />
+    <None Remove="epad\dist\assets\css\chunk-ed837cae.f5fd1d40.css" />
+    <None Remove="epad\dist\assets\css\chunk-fe9ee616.614773d7.css" />
+    <None Remove="epad\dist\assets\css\chunk-vendors.cf002a0e.css" />
+    <None Remove="epad\dist\assets\fonts\AvenirNext-Medium.597381f7.ttf" />
+    <None Remove="epad\dist\assets\fonts\element-icons.535877f5.woff" />
+    <None Remove="epad\dist\assets\fonts\element-icons.732389de.ttf" />
+    <None Remove="epad\dist\assets\fonts\NotoSans-Regular.5a87cce8.ttf" />
+    <None Remove="epad\dist\assets\img\add%402x.edc81c56.png" />
+    <None Remove="epad\dist\assets\img\add%403x.5964c473.png" />
+    <None Remove="epad\dist\assets\img\add.06f90519.svg" />
+    <None Remove="epad\dist\assets\img\adjust.d410ca15.svg" />
+    <None Remove="epad\dist\assets\img\algorithm.06b2b4ee.svg" />
+    <None Remove="epad\dist\assets\img\arrow-down.b151e846.svg" />
+    <None Remove="epad\dist\assets\img\arrow.92b7001d.svg" />
+    <None Remove="epad\dist\assets\img\avatar.49f5e10d.png" />
+    <None Remove="epad\dist\assets\img\base_fpVerify_clearImage.371af8b1.png" />
+    <None Remove="epad\dist\assets\img\bell.f8338351.svg" />
+    <None Remove="epad\dist\assets\img\bg-login%402x.721bcaee.png" />
+    <None Remove="epad\dist\assets\img\bg-login%403x.0dab6344.png" />
+    <None Remove="epad\dist\assets\img\bg-login.223ffe19.png" />
+    <None Remove="epad\dist\assets\img\bg-sidebar%402x.315b3026.png" />
+    <None Remove="epad\dist\assets\img\bg-sidebar%403x.51a05913.png" />
+    <None Remove="epad\dist\assets\img\bg-sidebar.1c66295c.png" />
+    <None Remove="epad\dist\assets\img\calendar.8905187c.svg" />
+    <None Remove="epad\dist\assets\img\circle-add.fcc50f82.svg" />
+    <None Remove="epad\dist\assets\img\close-circle.e29d93cc.svg" />
+    <None Remove="epad\dist\assets\img\close.b2d94a26.svg" />
+    <None Remove="epad\dist\assets\img\cross.441d8611.svg" />
+    <None Remove="epad\dist\assets\img\download.6f797de8.svg" />
+    <None Remove="epad\dist\assets\img\fill%402x.e11b326d.png" />
+    <None Remove="epad\dist\assets\img\fill%403x.fc65a608.png" />
+    <None Remove="epad\dist\assets\img\fill.a68ea782.png" />
+    <None Remove="epad\dist\assets\img\fingerprint.6da140f2.png" />
+    <None Remove="epad\dist\assets\img\foursquare-check-in.4f7c9356.svg" />
+    <None Remove="epad\dist\assets\img\full-color-primary-logo.5704845c.png" />
+    <None Remove="epad\dist\assets\img\group.dc1fec34.svg" />
+    <None Remove="epad\dist\assets\img\home.0845cc02.svg" />
+    <None Remove="epad\dist\assets\img\home.fe40de46.png" />
+    <None Remove="epad\dist\assets\img\image-attend.c9a53523.png" />
+    <None Remove="epad\dist\assets\img\lock.ed266c78.svg" />
+    <None Remove="epad\dist\assets\img\logo%402x.36dd5949.png" />
+    <None Remove="epad\dist\assets\img\logo%403x.1030a6a1.png" />
+    <None Remove="epad\dist\assets\img\logo-light%402x.8589fcf4.png" />
+    <None Remove="epad\dist\assets\img\logo-light%403x.da47978f.png" />
+    <None Remove="epad\dist\assets\img\logo.5704845c.png" />
+    <None Remove="epad\dist\assets\img\notify.e18798d5.svg" />
+    <None Remove="epad\dist\assets\img\personal-computer.a8d59873.svg" />
+    <None Remove="epad\dist\assets\img\plus-copy.f798dd91.svg" />
+    <None Remove="epad\dist\assets\img\plus.aee6e02f.svg" />
+    <None Remove="epad\dist\assets\img\repeat.a20f83cf.svg" />
+    <None Remove="epad\dist\assets\img\right-arrow.2c195d6a.svg" />
+    <None Remove="epad\dist\assets\img\service.6f8e2baf.png" />
+    <None Remove="epad\dist\assets\img\settings.7f84810f.svg" />
+    <None Remove="epad\dist\assets\img\spanner.de411bb6.svg" />
+    <None Remove="epad\dist\assets\img\statistics.a2a84a8d.svg" />
+    <None Remove="epad\dist\assets\img\system%402x.c80c102f.png" />
+    <None Remove="epad\dist\assets\img\system%403x.5995dae4.png" />
+    <None Remove="epad\dist\assets\img\system.fe40de46.png" />
+    <None Remove="epad\dist\assets\img\tree-plus.72897f7a.svg" />
+    <None Remove="epad\dist\assets\img\tree-view.a060bc18.svg" />
+    <None Remove="epad\dist\assets\img\user-1.a2b8402f.svg" />
+    <None Remove="epad\dist\assets\img\user-2.02fdde79.svg" />
+    <None Remove="epad\dist\assets\img\user-3.5c85479b.svg" />
+    <None Remove="epad\dist\assets\img\watch.b4df2862.svg" />
+    <None Remove="epad\dist\assets\js\app.2380f359.js" />
+    <None Remove="epad\dist\assets\js\chunk-0bcea778.1e4aae14.js" />
+    <None Remove="epad\dist\assets\js\chunk-0e75cda0.da006e49.js" />
+    <None Remove="epad\dist\assets\js\chunk-1359bc7d.101d63f4.js" />
+    <None Remove="epad\dist\assets\js\chunk-198aab40.ba036bbe.js" />
+    <None Remove="epad\dist\assets\js\chunk-1a219aa7.87ae1fe5.js" />
+    <None Remove="epad\dist\assets\js\chunk-260e6521.02c2e046.js" />
+    <None Remove="epad\dist\assets\js\chunk-2ad2d9a7.9afcdba6.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d0b24dd.a89a171e.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d0cbe58.eed797ca.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d0e28b6.82252b91.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d0e5ef9.52c47985.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d0f0fc3.b2064529.js" />
+    <None Remove="epad\dist\assets\js\chunk-2d2297bc.71a673a2.js" />
+    <None Remove="epad\dist\assets\js\chunk-34641b66.d5b8858d.js" />
+    <None Remove="epad\dist\assets\js\chunk-35710b23.c97e1f67.js" />
+    <None Remove="epad\dist\assets\js\chunk-3a15f3d0.c4e563be.js" />
+    <None Remove="epad\dist\assets\js\chunk-48fcfd91.5f80aa3b.js" />
+    <None Remove="epad\dist\assets\js\chunk-4bef70ea.aee5f17e.js" />
+    <None Remove="epad\dist\assets\js\chunk-4c1c7469.5c90e21b.js" />
+    <None Remove="epad\dist\assets\js\chunk-4c29e74c.5bc874a5.js" />
+    <None Remove="epad\dist\assets\js\chunk-4cf64038.32fa6358.js" />
+    <None Remove="epad\dist\assets\js\chunk-4d4f684b.afb2d8da.js" />
+    <None Remove="epad\dist\assets\js\chunk-522447ce.2b484e7b.js" />
+    <None Remove="epad\dist\assets\js\chunk-53d96caf.3aa2f6f7.js" />
+    <None Remove="epad\dist\assets\js\chunk-5bfd5386.ab848dd4.js" />
+    <None Remove="epad\dist\assets\js\chunk-64daa4b0.da6ba144.js" />
+    <None Remove="epad\dist\assets\js\chunk-66408d36.88a01259.js" />
+    <None Remove="epad\dist\assets\js\chunk-667674c8.9cd4aa2f.js" />
+    <None Remove="epad\dist\assets\js\chunk-6ccc4eb3.eaa8ef42.js" />
+    <None Remove="epad\dist\assets\js\chunk-718c5c0b.fb2e92b8.js" />
+    <None Remove="epad\dist\assets\js\chunk-794ca5b9.7db203a7.js" />
+    <None Remove="epad\dist\assets\js\chunk-7d513f1e.b58afae5.js" />
+    <None Remove="epad\dist\assets\js\chunk-7ec8787e.282cfd1d.js" />
+    <None Remove="epad\dist\assets\js\chunk-97d3281c.3388f1d6.js" />
+    <None Remove="epad\dist\assets\js\chunk-a568bd3a.0f32da85.js" />
+    <None Remove="epad\dist\assets\js\chunk-acdae112.8f786886.js" />
+    <None Remove="epad\dist\assets\js\chunk-afbd3b3e.4e32f75d.js" />
+    <None Remove="epad\dist\assets\js\chunk-b06aa138.c4f7d5e1.js" />
+    <None Remove="epad\dist\assets\js\chunk-b6764c10.235a7855.js" />
+    <None Remove="epad\dist\assets\js\chunk-b7c8e8da.f7f0e812.js" />
+    <None Remove="epad\dist\assets\js\chunk-ccef0b58.2c1dc6e2.js" />
+    <None Remove="epad\dist\assets\js\chunk-d455223c.7ad0c6b6.js" />
+    <None Remove="epad\dist\assets\js\chunk-d4ad6ab4.f023853b.js" />
+    <None Remove="epad\dist\assets\js\chunk-d8fae626.6037443d.js" />
+    <None Remove="epad\dist\assets\js\chunk-ed837cae.ee1256dc.js" />
+    <None Remove="epad\dist\assets\js\chunk-fbd11a5c.efc0490d.js" />
+    <None Remove="epad\dist\assets\js\chunk-fe9ee616.198cc492.js" />
+    <None Remove="epad\dist\assets\js\chunk-vendors.2a529f1b.js" />
+    <None Remove="epad\dist\favicon.ico" />
+    <None Remove="epad\dist\img\icons\android-chrome-192x192.png" />
+    <None Remove="epad\dist\img\icons\android-chrome-512x512.png" />
+    <None Remove="epad\dist\img\icons\android-chrome-maskable-192x192.png" />
+    <None Remove="epad\dist\img\icons\android-chrome-maskable-512x512.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon-120x120.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon-152x152.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon-180x180.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon-60x60.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon-76x76.png" />
+    <None Remove="epad\dist\img\icons\apple-touch-icon.png" />
+    <None Remove="epad\dist\img\icons\favicon-16x16.png" />
+    <None Remove="epad\dist\img\icons\favicon-32x32.png" />
+    <None Remove="epad\dist\img\icons\msapplication-icon-144x144.png" />
+    <None Remove="epad\dist\img\icons\mstile-150x150.png" />
+    <None Remove="epad\dist\img\icons\safari-pinned-tab.svg" />
+    <None Remove="epad\dist\index.html" />
+    <None Remove="epad\dist\manifest.json" />
+    <None Remove="epad\dist\precache-manifest.4dec60a13466ab6a2b0af6afb2c91b2d.js" />
+    <None Remove="epad\dist\robots.txt" />
+    <None Remove="epad\dist\service-worker.js" />
+    <None Remove="epad\dist\static\grid-config\hr-customer-info.json" />
+    <None Remove="epad\dist\static\grid-config\hr-employee-info.json" />
+    <None Remove="epad\dist\static\grid-config\hr-nanny-info.json" />
+    <None Remove="epad\dist\static\grid-config\hr-parent-info.json" />
+    <None Remove="epad\dist\static\grid-config\hr-student-info.json" />
+    <None Remove="epad\dist\static\variables\app.host.json" />
+    <None Remove="epad\dist\static\variables\common-utils.json" />
+    <None Remove="epad\dist\static\variables\config.js" />
+    <None Remove="epad\dist\static\variables\group-menu-basic.json" />
+    <None Remove="epad\dist\static\variables\group-menu-may.json" />
+    <None Remove="epad\dist\static\variables\group-menu-ortholite.json" />
+    <None Remove="epad\dist\static\variables\group-menu.json" />
+    <None Remove="epad\dist\static\variables\menu.json" />
+    <None Remove="epad\dist\static\variables\oidc-config.json" />
+    <None Remove="epad\dist\static\variables\ssrs.json" />
+    <None Remove="epad\dist\Template_ChooseEmployeeSync.xlsx" />
+    <None Remove="epad\dist\Template_Delete_IC_Employee_MAY.xlsx" />
+    <None Remove="epad\dist\Template_Employee_Transfer.xlsx" />
+    <None Remove="epad\dist\Template_HR_Parent.xlsx" />
+    <None Remove="epad\dist\Template_HR_Student.xlsx" />
+    <None Remove="epad\dist\Template_IC_Department.xlsx" />
+    <None Remove="epad\dist\Template_IC_Device.xlsx" />
+    <None Remove="epad\dist\Template_IC_Employee.xlsx" />
+    <None Remove="epad\dist\Template_IC_Employee_MAY.xlsx" />
+    <None Remove="epad\package-lock.json" />
+    <None Remove="epad\package.json" />
+    <None Remove="epad\public\favicon.ico" />
+    <None Remove="epad\public\img\icons\android-chrome-192x192.png" />
+    <None Remove="epad\public\img\icons\android-chrome-512x512.png" />
+    <None Remove="epad\public\img\icons\android-chrome-maskable-192x192.png" />
+    <None Remove="epad\public\img\icons\android-chrome-maskable-512x512.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon-120x120.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon-152x152.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon-180x180.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon-60x60.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon-76x76.png" />
+    <None Remove="epad\public\img\icons\apple-touch-icon.png" />
+    <None Remove="epad\public\img\icons\favicon-16x16.png" />
+    <None Remove="epad\public\img\icons\favicon-32x32.png" />
+    <None Remove="epad\public\img\icons\msapplication-icon-144x144.png" />
+    <None Remove="epad\public\img\icons\mstile-150x150.png" />
+    <None Remove="epad\public\img\icons\safari-pinned-tab.svg" />
+    <None Remove="epad\public\index.html" />
+    <None Remove="epad\public\robots.txt" />
+    <None Remove="epad\public\Template_ChooseEmployeeSync.xlsx" />
+    <None Remove="epad\public\Template_Delete_IC_Employee_MAY.xlsx" />
+    <None Remove="epad\public\Template_Employee_Transfer.xlsx" />
+    <None Remove="epad\public\Template_HR_Parent.xlsx" />
+    <None Remove="epad\public\Template_HR_Student.xlsx" />
+    <None Remove="epad\public\Template_IC_Device.xlsx" />
+    <None Remove="epad\public\Template_IC_Employee.xlsx" />
+    <None Remove="epad\public\Template_IC_Employee_MAY.xlsx" />
+    <None Remove="epad\README.md" />
+    <None Remove="epad\src\%24api\attendance-log-api.ts" />
+    <None Remove="epad\src\%24api\audit-api.ts" />
+    <None Remove="epad\src\%24api\auth-api.ts" />
+    <None Remove="epad\src\%24api\camera-api.ts" />
+    <None Remove="epad\src\%24api\command-api.ts" />
+    <None Remove="epad\src\%24api\config-api.ts" />
+    <None Remove="epad\src\%24api\config-group-api.ts" />
+    <None Remove="epad\src\%24api\controlle-api.ts" />
+    <None Remove="epad\src\%24api\department-api.ts" />
+    <None Remove="epad\src\%24api\device-api.ts" />
+    <None Remove="epad\src\%24api\employee-info-api.ts" />
+    <None Remove="epad\src\%24api\employee-transfer-api.ts" />
+    <None Remove="epad\src\%24api\file-api.ts" />
+    <None Remove="epad\src\%24api\group-device-api.ts" />
+    <None Remove="epad\src\%24api\hr-card-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-class-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-customer-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-employee-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-nanny-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-parent-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-position-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-student-info-api.ts" />
+    <None Remove="epad\src\%24api\hr-user-api.ts" />
+    <None Remove="epad\src\%24api\index.ts" />
+    <None Remove="epad\src\%24api\license-api.ts" />
+    <None Remove="epad\src\%24api\login-account-api.ts" />
+    <None Remove="epad\src\%24api\machine-api.ts" />
+    <None Remove="epad\src\%24api\position-api.ts" />
+    <None Remove="epad\src\%24api\printer-api.ts" />
+    <None Remove="epad\src\%24api\privilege-department-api.ts" />
+    <None Remove="epad\src\%24api\privilege-detail-api.ts" />
+    <None Remove="epad\src\%24api\privilege-device-detail-api.ts" />
+    <None Remove="epad\src\%24api\relay-controller-api.ts" />
+    <None Remove="epad\src\%24api\service-and-device-api.ts" />
+    <None Remove="epad\src\%24api\service-api.ts" />
+    <None Remove="epad\src\%24api\setting-api.ts" />
+    <None Remove="epad\src\%24api\system-command-api.ts" />
+    <None Remove="epad\src\%24api\tracking-system-log-api.ts" />
+    <None Remove="epad\src\%24api\user-account-api.ts" />
+    <None Remove="epad\src\%24api\user-account-log-api.ts" />
+    <None Remove="epad\src\%24api\user-info-api.ts" />
+    <None Remove="epad\src\%24api\user-master-api.ts" />
+    <None Remove="epad\src\%24api\user-notification-api.ts" />
+    <None Remove="epad\src\%24api\user-privilege-api.ts" />
+    <None Remove="epad\src\%24api\working-info-api.ts" />
+    <None Remove="epad\src\%24core\base-api.ts" />
+    <None Remove="epad\src\%24core\config-provider.ts" />
+    <None Remove="epad\src\%24core\config-service.ts" />
+    <None Remove="epad\src\%24core\config.ts" />
+    <None Remove="epad\src\%24core\event-bus.ts" />
+    <None Remove="epad\src\%24core\misc.ts" />
+    <None Remove="epad\src\%24core\oauth-services.ts" />
+    <None Remove="epad\src\%24core\oidc-services.ts" />
+    <None Remove="epad\src\%24extensions\index.ts" />
+    <None Remove="epad\src\%24extensions\vue-notify.ts" />
+    <None Remove="epad\src\%24types\command.d.ts" />
+    <None Remove="epad\src\%24types\form-component.d.ts" />
+    <None Remove="epad\src\%24types\igroup-menu.d.ts" />
+    <None Remove="epad\src\%24types\istate.d.ts" />
+    <None Remove="epad\src\%24types\matrix-checkbox.d.ts" />
+    <None Remove="epad\src\%24types\t-grid-column.d.ts" />
+    <None Remove="epad\src\%24types\tab.d.ts" />
+    <None Remove="epad\src\App.ts" />
+    <None Remove="epad\src\App.vue" />
+    <None Remove="epad\src\assets\background\fill-1%402x.png" />
+    <None Remove="epad\src\assets\background\fill-1%403x.png" />
+    <None Remove="epad\src\assets\background\fill-1.png" />
+    <None Remove="epad\src\assets\background\group-12%402x.png" />
+    <None Remove="epad\src\assets\background\group-12%403x.png" />
+    <None Remove="epad\src\assets\background\group-2%402x.png" />
+    <None Remove="epad\src\assets\background\group-2%403x.png" />
+    <None Remove="epad\src\assets\background\group-2.png" />
+    <None Remove="epad\src\assets\background\home%402x.png" />
+    <None Remove="epad\src\assets\background\home%403x.png" />
+    <None Remove="epad\src\assets\background\home.png" />
+    <None Remove="epad\src\assets\background\rectangle%402x.png" />
+    <None Remove="epad\src\assets\background\rectangle.png" />
+    <None Remove="epad\src\assets\background\service.png" />
+    <None Remove="epad\src\assets\css\animate.css" />
+    <None Remove="epad\src\assets\css\bootstrap.min.css" />
+    <None Remove="epad\src\assets\css\element-icons.ttf" />
+    <None Remove="epad\src\assets\css\element-icons.woff" />
+    <None Remove="epad\src\assets\css\element-ui%402.12.0.css" />
+    <None Remove="epad\src\assets\css\material-icon.css" />
+    <None Remove="epad\src\assets\css\materialize.css" />
+    <None Remove="epad\src\assets\css\materialize.min.css" />
+    <None Remove="epad\src\assets\css\style.css" />
+    <None Remove="epad\src\assets\css\styles.css" />
+    <None Remove="epad\src\assets\css\styles.min.css" />
+    <None Remove="epad\src\assets\fonts\AvenirNext-Bold.ttf" />
+    <None Remove="epad\src\assets\fonts\AvenirNext-DemiBold.ttf" />
+    <None Remove="epad\src\assets\fonts\AvenirNext-Italic.ttf" />
+    <None Remove="epad\src\assets\fonts\AvenirNext-Medium.ttf" />
+    <None Remove="epad\src\assets\fonts\AvenirNext-Regular.ttf" />
+    <None Remove="epad\src\assets\fonts\icomoon.eot" />
+    <None Remove="epad\src\assets\fonts\icomoon.svg" />
+    <None Remove="epad\src\assets\fonts\icomoon.ttf" />
+    <None Remove="epad\src\assets\fonts\icomoon.woff" />
+    <None Remove="epad\src\assets\fonts\NotoSans-Bold.ttf" />
+    <None Remove="epad\src\assets\fonts\NotoSans-BoldItalic.ttf" />
+    <None Remove="epad\src\assets\fonts\NotoSans-Italic.ttf" />
+    <None Remove="epad\src\assets\fonts\NotoSans-Regular.ttf" />
+    <None Remove="epad\src\assets\icons\arrow-collapse.png" />
+    <None Remove="epad\src\assets\icons\arrow-right.png" />
+    <None Remove="epad\src\assets\icons\Button\add.png" />
+    <None Remove="epad\src\assets\icons\Button\Add_1.png" />
+    <None Remove="epad\src\assets\icons\Button\circle-add.svg" />
+    <None Remove="epad\src\assets\icons\Button\Delete.png" />
+    <None Remove="epad\src\assets\icons\Button\Edit.png" />
+    <None Remove="epad\src\assets\icons\Button\group-4.png" />
+    <None Remove="epad\src\assets\icons\Button\More.png" />
+    <None Remove="epad\src\assets\icons\Common\company.png" />
+    <None Remove="epad\src\assets\icons\Common\department.png" />
+    <None Remove="epad\src\assets\icons\Common\user.png" />
+    <None Remove="epad\src\assets\icons\function-bar\adjust.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\cross.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\edit.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\foursquare-check-in.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\gear.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\more.svg" />
+    <None Remove="epad\src\assets\icons\function-bar\trash.svg" />
+    <None Remove="epad\src\assets\icons\Header-Components\avatar.png" />
+    <None Remove="epad\src\assets\icons\Header-Components\group-4.png" />
+    <None Remove="epad\src\assets\icons\Header-Components\notify.png" />
+    <None Remove="epad\src\assets\icons\Header-Components\settings.png" />
+    <None Remove="epad\src\assets\icons\LeftMenu\ePAD_logo.png" />
+    <None Remove="epad\src\assets\icons\LeftMenu\flower.png" />
+    <None Remove="epad\src\assets\icons\LeftMenu\Vector.png" />
+    <None Remove="epad\src\assets\icons\NavBar\decentralization.png" />
+    <None Remove="epad\src\assets\icons\NavBar\department.png" />
+    <None Remove="epad\src\assets\icons\NavBar\device.png" />
+    <None Remove="epad\src\assets\icons\NavBar\employee.png" />
+    <None Remove="epad\src\assets\icons\NavBar\employeemanagement.png" />
+    <None Remove="epad\src\assets\icons\NavBar\groupmachine.png" />
+    <None Remove="epad\src\assets\icons\NavBar\history.png" />
+    <None Remove="epad\src\assets\icons\NavBar\home.png" />
+    <None Remove="epad\src\assets\icons\NavBar\settings.png" />
+    <None Remove="epad\src\assets\icons\NavBar\switchdepartment.png" />
+    <None Remove="epad\src\assets\icons\NavBar\systemmanagement.png" />
+    <None Remove="epad\src\assets\icons\NavBar\usermanagement.png" />
+    <None Remove="epad\src\assets\icons\search-icon.svg" />
+    <None Remove="epad\src\assets\images\add.svg" />
+    <None Remove="epad\src\assets\images\add\add%402x.png" />
+    <None Remove="epad\src\assets\images\add\add%403x.png" />
+    <None Remove="epad\src\assets\images\add\add.png" />
+    <None Remove="epad\src\assets\images\algorithm.svg" />
+    <None Remove="epad\src\assets\images\arrow-down.svg" />
+    <None Remove="epad\src\assets\images\arrow.svg" />
+    <None Remove="epad\src\assets\images\avatar.png" />
+    <None Remove="epad\src\assets\images\avatar1.png" />
+    <None Remove="epad\src\assets\images\base_fpVerify_clearImage.png" />
+    <None Remove="epad\src\assets\images\bell.svg" />
+    <None Remove="epad\src\assets\images\bg-login\bg-login%402x.png" />
+    <None Remove="epad\src\assets\images\bg-login\bg-login%403x.png" />
+    <None Remove="epad\src\assets\images\bg-login\bg-login.png" />
+    <None Remove="epad\src\assets\images\bg-sidebar\bg-sidebar%402x.png" />
+    <None Remove="epad\src\assets\images\bg-sidebar\bg-sidebar%403x.png" />
+    <None Remove="epad\src\assets\images\bg-sidebar\bg-sidebar.png" />
+    <None Remove="epad\src\assets\images\calendar.svg" />
+    <None Remove="epad\src\assets\images\close-circle.svg" />
+    <None Remove="epad\src\assets\images\close.svg" />
+    <None Remove="epad\src\assets\images\download.svg" />
+    <None Remove="epad\src\assets\images\fill\fill%402x.png" />
+    <None Remove="epad\src\assets\images\fill\fill%403x.png" />
+    <None Remove="epad\src\assets\images\fill\fill.png" />
+    <None Remove="epad\src\assets\images\fingerprint.png" />
+    <None Remove="epad\src\assets\images\group.svg" />
+    <None Remove="epad\src\assets\images\home.svg" />
+    <None Remove="epad\src\assets\images\image-attend.png" />
+    <None Remove="epad\src\assets\images\lock.svg" />
+    <None Remove="epad\src\assets\images\logo-light\logo-light%402x.png" />
+    <None Remove="epad\src\assets\images\logo-light\logo-light%403x.png" />
+    <None Remove="epad\src\assets\images\logo-light\logo-light.png" />
+    <None Remove="epad\src\assets\images\logo\logo%402x.png" />
+    <None Remove="epad\src\assets\images\logo\logo%403x.png" />
+    <None Remove="epad\src\assets\images\logo\logo.png" />
+    <None Remove="epad\src\assets\images\NavBar\bg-sidebar%402x.png" />
+    <None Remove="epad\src\assets\images\NavBar\bg-sidebar%403x.png" />
+    <None Remove="epad\src\assets\images\NavBar\bg-sidebar.png" />
+    <None Remove="epad\src\assets\images\NavBar\logo-light%402x.png" />
+    <None Remove="epad\src\assets\images\NavBar\logo-light%403x.png" />
+    <None Remove="epad\src\assets\images\NavBar\logo-light-collapse.png" />
+    <None Remove="epad\src\assets\images\NavBar\logo-light.png" />
+    <None Remove="epad\src\assets\images\notify.svg" />
+    <None Remove="epad\src\assets\images\personal-computer.svg" />
+    <None Remove="epad\src\assets\images\plus-copy.svg" />
+    <None Remove="epad\src\assets\images\plus.svg" />
+    <None Remove="epad\src\assets\images\repeat.svg" />
+    <None Remove="epad\src\assets\images\right-arrow.svg" />
+    <None Remove="epad\src\assets\images\right-arrow\right-arrow%402x.png" />
+    <None Remove="epad\src\assets\images\right-arrow\right-arrow%403x.png" />
+    <None Remove="epad\src\assets\images\right-arrow\right-arrow.png" />
+    <None Remove="epad\src\assets\images\settings.svg" />
+    <None Remove="epad\src\assets\images\spanner.svg" />
+    <None Remove="epad\src\assets\images\statistics.svg" />
+    <None Remove="epad\src\assets\images\system\system%402x.png" />
+    <None Remove="epad\src\assets\images\system\system%403x.png" />
+    <None Remove="epad\src\assets\images\system\system.png" />
+    <None Remove="epad\src\assets\images\tree-plus.svg" />
+    <None Remove="epad\src\assets\images\tree-view.svg" />
+    <None Remove="epad\src\assets\images\user-1.svg" />
+    <None Remove="epad\src\assets\images\user-2.svg" />
+    <None Remove="epad\src\assets\images\user-3.svg" />
+    <None Remove="epad\src\assets\images\watch.svg" />
+    <None Remove="epad\src\assets\js\bootstrap.min.js" />
+    <None Remove="epad\src\assets\js\Chart.min.js" />
+    <None Remove="epad\src\assets\js\DashBoard.js" />
+    <None Remove="epad\src\assets\js\element.js" />
+    <None Remove="epad\src\assets\js\jquery-3.4.1.min.js" />
+    <None Remove="epad\src\assets\js\materialize.js" />
+    <None Remove="epad\src\assets\js\materialize.min.js" />
+    <None Remove="epad\src\assets\js\mdb.min.js" />
+    <None Remove="epad\src\assets\js\popper.min.js" />
+    <None Remove="epad\src\assets\js\scripts.js" />
+    <None Remove="epad\src\assets\js\scripts.min.js" />
+    <None Remove="epad\src\assets\js\vendors\bootstrap.min.js" />
+    <None Remove="epad\src\assets\js\vendors\jquery-3.4.1.slim.min.js" />
+    <None Remove="epad\src\assets\js\vendors\popper.min.js" />
+    <None Remove="epad\src\assets\logo.png" />
+    <None Remove="epad\src\assets\logo\full-color-primary-logo-white.png" />
+    <None Remove="epad\src\assets\logo\full-color-primary-logo.png" />
+    <None Remove="epad\src\components\app-component\app-layout\app-layout.vue" />
+    <None Remove="epad\src\components\app-component\app-pagination\app-pagination.vue" />
+    <None Remove="epad\src\components\app-component\approve-popup-component\approve-popup-component.ts" />
+    <None Remove="epad\src\components\app-component\approve-popup-component\approve-popup-component.vue" />
+    <None Remove="epad\src\components\app-component\button-create\button-create.vue" />
+    <None Remove="epad\src\components\app-component\config-component\config-component.ts" />
+    <None Remove="epad\src\components\app-component\config-component\config-component.vue" />
+    <None Remove="epad\src\components\app-component\config-component\integrate-log-realtime-config.ts" />
+    <None Remove="epad\src\components\app-component\config-component\integrate-log-realtime-config.vue" />
+    <None Remove="epad\src\components\app-component\context-menu\context-menu-wrap.ts" />
+    <None Remove="epad\src\components\app-component\context-menu\context-menu-wrap.vue" />
+    <None Remove="epad\src\components\app-component\context-menu\context-menu.ts" />
+    <None Remove="epad\src\components\app-component\context-menu\context-menu.vue" />
+    <None Remove="epad\src\components\app-component\context-menu\index.ts" />
+    <None Remove="epad\src\components\app-component\count-time\count-time.vue" />
+    <None Remove="epad\src\components\app-component\department-tree-component\department-tree-component.ts" />
+    <None Remove="epad\src\components\app-component\department-tree-component\department-tree-component.vue" />
+    <None Remove="epad\src\components\app-component\device-info-table\device-info-table.vue" />
+    <None Remove="epad\src\components\app-component\device-info-table\device-license-renderer.vue" />
+    <None Remove="epad\src\components\app-component\device-info-table\device-processing-status-component.vue" />
+    <None Remove="epad\src\components\app-component\import-popup-component\import-popup-component.ts" />
+    <None Remove="epad\src\components\app-component\import-popup-component\import-popup-component.vue" />
+    <None Remove="epad\src\components\app-component\index.ts" />
+    <None Remove="epad\src\components\app-component\matrix-checkbox-component\matrix-checkbox-component.ts" />
+    <None Remove="epad\src\components\app-component\matrix-checkbox-component\matrix-checkbox-component.vue" />
+    <None Remove="epad\src\components\app-component\matrix-component\matrix-component.ts" />
+    <None Remove="epad\src\components\app-component\matrix-component\matrix-component.vue" />
+    <None Remove="epad\src\components\app-component\multi-state-component\multi-state-component.ts" />
+    <None Remove="epad\src\components\app-component\multi-state-component\multi-state-component.vue" />
+    <None Remove="epad\src\components\app-component\notify-popup-component\notify-popup-component.ts" />
+    <None Remove="epad\src\components\app-component\notify-popup-component\notify-popup-component.vue" />
+    <None Remove="epad\src\components\app-component\search-field\search-field.vue" />
+    <None Remove="epad\src\components\app-component\select-department\select-department.ts" />
+    <None Remove="epad\src\components\app-component\select-department\select-department.vue" />
+    <None Remove="epad\src\components\app-component\select-position\select-position.ts" />
+    <None Remove="epad\src\components\app-component\select-position\select-position.vue" />
+    <None Remove="epad\src\components\app-component\select-tree-component\select-tree-component.ts" />
+    <None Remove="epad\src\components\app-component\select-tree-component\select-tree-component.vue" />
+    <None Remove="epad\src\components\app-component\server-error\server-error.ts" />
+    <None Remove="epad\src\components\app-component\server-error\server-error.vue" />
+    <None Remove="epad\src\components\app-component\t-button-bar\t-button-bar.ts" />
+    <None Remove="epad\src\components\app-component\t-button-bar\t-button-bar.vue" />
+    <None Remove="epad\src\components\app-component\t-grid\t-grid.ts" />
+    <None Remove="epad\src\components\app-component\t-grid\t-grid.vue" />
+    <None Remove="epad\src\components\app-component\visualize-table\image-cell-renderer-visualize-table.vue" />
+    <None Remove="epad\src\components\app-component\visualize-table\visualize-table.vue" />
+    <None Remove="epad\src\components\home\approve-change-department-component\approve-change-department-component.ts" />
+    <None Remove="epad\src\components\home\approve-change-department-component\approve-change-department-component.vue" />
+    <None Remove="epad\src\components\home\assign-privilege-department-component\assign-privilege-department-component.ts" />
+    <None Remove="epad\src\components\home\assign-privilege-department-component\assign-privilege-department-component.vue" />
+    <None Remove="epad\src\components\home\assign-privilege-device-component\assign-privilege-device-component.ts" />
+    <None Remove="epad\src\components\home\assign-privilege-device-component\assign-privilege-device-component.vue" />
+    <None Remove="epad\src\components\home\assign-privilege-user-group-component\assign-privilege-user-group-component.ts" />
+    <None Remove="epad\src\components\home\assign-privilege-user-group-component\assign-privilege-user-group-component.vue" />
+    <None Remove="epad\src\components\home\auto-synch-user-component\auto-synch-user-component.ts" />
+    <None Remove="epad\src\components\home\auto-synch-user-component\auto-synch-user-component.vue" />
+    <None Remove="epad\src\components\home\auto-synch-user-component\delete-user-on-machine-button.vue" />
+    <None Remove="epad\src\components\home\auto-synch-user-component\download-user-master-button.vue" />
+    <None Remove="epad\src\components\home\camera-control-component\camera-control.ts" />
+    <None Remove="epad\src\components\home\camera-control-component\camera-control.vue" />
+    <None Remove="epad\src\components\home\change-department-component\change-department-component.ts" />
+    <None Remove="epad\src\components\home\change-department-component\change-department-component.vue" />
+    <None Remove="epad\src\components\home\controller-component\controller-component.ts" />
+    <None Remove="epad\src\components\home\controller-component\controller-component.vue" />
+    <None Remove="epad\src\components\home\data-table-component\data-table-component.ts" />
+    <None Remove="epad\src\components\home\data-table-component\data-table-component.vue" />
+    <None Remove="epad\src\components\home\data-table-component\data-table-function-component.ts" />
+    <None Remove="epad\src\components\home\data-table-component\data-table-function-component.vue" />
+    <None Remove="epad\src\components\home\department-component\department-component.ts" />
+    <None Remove="epad\src\components\home\department-component\department-component.vue" />
+    <None Remove="epad\src\components\home\device-component\device-by-department-component.ts" />
+    <None Remove="epad\src\components\home\device-component\device-by-department-component.vue" />
+    <None Remove="epad\src\components\home\device-component\device-component.ts" />
+    <None Remove="epad\src\components\home\device-component\device-component.vue" />
+    <None Remove="epad\src\components\home\device-info-component\device-info-component.ts" />
+    <None Remove="epad\src\components\home\device-info-component\device-info-component.vue" />
+    <None Remove="epad\src\components\home\device-info-component\device-info-for-home-component.ts" />
+    <None Remove="epad\src\components\home\device-info-component\device-info-for-home-component.vue" />
+    <None Remove="epad\src\components\home\employee-component\employee-component.ts" />
+    <None Remove="epad\src\components\home\employee-component\employee-component.vue" />
+    <None Remove="epad\src\components\home\group-account-component\group-account-component.ts" />
+    <None Remove="epad\src\components\home\group-account-component\group-account-component.vue" />
+    <None Remove="epad\src\components\home\group-device-component\group-device-component.ts" />
+    <None Remove="epad\src\components\home\group-device-component\group-device-component.vue" />
+    <None Remove="epad\src\components\home\header-component\header-component.ts" />
+    <None Remove="epad\src\components\home\header-component\header-component.vue" />
+    <None Remove="epad\src\components\home\history-user-component\history-user-component.ts" />
+    <None Remove="epad\src\components\home\history-user-component\history-user-component.vue" />
+    <None Remove="epad\src\components\home\home-component\home-component.ts" />
+    <None Remove="epad\src\components\home\home-component\home-component.vue" />
+    <None Remove="epad\src\components\home\list-group-device-component\list-group-device-component.ts" />
+    <None Remove="epad\src\components\home\list-group-device-component\list-group-device-component.vue" />
+    <None Remove="epad\src\components\home\list-service-component\list-service-component.ts" />
+    <None Remove="epad\src\components\home\list-service-component\list-service-component.vue" />
+    <None Remove="epad\src\components\home\log-monitoring-component\livemachine-component.ts" />
+    <None Remove="epad\src\components\home\log-monitoring-component\livemachine-component.vue" />
+    <None Remove="epad\src\components\home\log-monitoring-component\log-monitoring-component.ts" />
+    <None Remove="epad\src\components\home\log-monitoring-component\log-monitoring-component.vue" />
+    <None Remove="epad\src\components\home\login-account-component\login-account-component.ts" />
+    <None Remove="epad\src\components\home\login-account-component\login-account-component.vue" />
+    <None Remove="epad\src\components\home\machine-component\machine-component.ts" />
+    <None Remove="epad\src\components\home\machine-component\machine-component.vue" />
+    <None Remove="epad\src\components\home\personal-access-token-component\personal-access-token-component.ts" />
+    <None Remove="epad\src\components\home\personal-access-token-component\personal-access-token-component.vue" />
+    <None Remove="epad\src\components\home\printer-control\editable-printer-dialog.vue" />
+    <None Remove="epad\src\components\home\printer-control\index.vue" />
+    <None Remove="epad\src\components\home\printer-control\printer-table-toolbar.vue" />
+    <None Remove="epad\src\components\home\printer-control\printer-table.vue" />
+    <None Remove="epad\src\components\home\relay-controller-component\relay-controller.ts" />
+    <None Remove="epad\src\components\home\relay-controller-component\relay-controller.vue" />
+    <None Remove="epad\src\components\home\report\report.ts" />
+    <None Remove="epad\src\components\home\report\report.vue" />
+    <None Remove="epad\src\components\home\service-component\devices-by-service-component.ts" />
+    <None Remove="epad\src\components\home\service-component\devices-by-service-component.vue" />
+    <None Remove="epad\src\components\home\service-component\restart-service-dialog.vue" />
+    <None Remove="epad\src\components\home\service-component\service-component.ts" />
+    <None Remove="epad\src\components\home\service-component\service-component.vue" />
+    <None Remove="epad\src\components\home\system-command-component\command-delete-confirm-dialog.vue" />
+    <None Remove="epad\src\components\home\system-command-component\system-command-component.ts" />
+    <None Remove="epad\src\components\home\system-command-component\system-command-component.vue" />
+    <None Remove="epad\src\components\home\system-config-component\system-config-component-2.ts" />
+    <None Remove="epad\src\components\home\system-config-component\system-config-component-2.vue" />
+    <None Remove="epad\src\components\home\system-config-component\system-config-component.ts" />
+    <None Remove="epad\src\components\home\system-config-component\system-config-component.vue" />
+    <None Remove="epad\src\components\home\system-config-group-device\system-config-group-device.ts" />
+    <None Remove="epad\src\components\home\system-config-group-device\system-config-group-device.vue" />
+    <None Remove="epad\src\components\home\tracking-system-component\tracking-system-component.ts" />
+    <None Remove="epad\src\components\home\tracking-system-component\tracking-system-component.vue" />
+    <None Remove="epad\src\components\home\transfer-labor-component\transfer-labor-component.ts" />
+    <None Remove="epad\src\components\home\transfer-labor-component\transfer-labor-component.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-card-info\hr-card-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-card-info\hr-card-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-class-info\hr-class-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-class-info\hr-class-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-customer-info\hr-customer-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-customer-info\hr-customer-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-employee-info\hr-employee-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-employee-info\hr-employee-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-nanny-info\hr-nanny-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-nanny-info\hr-nanny-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-parent-info\hr-parent-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-parent-info\hr-parent-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-position-info\hr-position-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-position-info\hr-position-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\hr-student-info\hr-student-info.ts" />
+    <None Remove="epad\src\components\home\user-management-component\hr-student-info\hr-student-info.vue" />
+    <None Remove="epad\src\components\home\user-management-component\user-management-component.ts" />
+    <None Remove="epad\src\components\home\user-management-component\user-management-component.vue" />
+    <None Remove="epad\src\components\home\view-log-attend-component\view-log-attend-component.ts" />
+    <None Remove="epad\src\components\home\view-log-attend-component\view-log-attend-component.vue" />
+    <None Remove="epad\src\components\home\working-info\working-info.ts" />
+    <None Remove="epad\src\components\home\working-info\working-info.vue" />
+    <None Remove="epad\src\components\index.ts" />
+    <None Remove="epad\src\constant\document.ts" />
+    <None Remove="epad\src\constant\request.ts" />
+    <None Remove="epad\src\constant\target-download-user.ts" />
+    <None Remove="epad\src\constant\user-sync-auth-mode.ts" />
+    <None Remove="epad\src\constant\variable.ts" />
+    <None Remove="epad\src\i18n.ts" />
+    <None Remove="epad\src\locales\basicAuthor.json" />
+    <None Remove="epad\src\locales\en.json" />
+    <None Remove="epad\src\locales\may\vi.json" />
+    <None Remove="epad\src\locales\vi.json" />
+    <None Remove="epad\src\main.ts" />
+    <None Remove="epad\src\mixins\application\component-mixins.ts" />
+    <None Remove="epad\src\mixins\application\page-mixins.ts" />
+    <None Remove="epad\src\mixins\application\tab-mixins.ts" />
+    <None Remove="epad\src\models\command-process-status.ts" />
+    <None Remove="epad\src\models\ic-printer.ts" />
+    <None Remove="epad\src\models\paged-list.ts" />
+    <None Remove="epad\src\registerServiceWorker.ts" />
+    <None Remove="epad\src\router\deivce-management.ts" />
+    <None Remove="epad\src\router\home.ts" />
+    <None Remove="epad\src\router\index.ts" />
+    <None Remove="epad\src\router\reports.ts" />
+    <None Remove="epad\src\router\system-management.ts" />
+    <None Remove="epad\src\router\user-management.ts" />
+    <None Remove="epad\src\shims-tsx.d.ts" />
+    <None Remove="epad\src\shims-vue.d.ts" />
+    <None Remove="epad\src\startup\hubConnection.ts" />
+    <None Remove="epad\src\static\grid-config\hr-customer-info.json" />
+    <None Remove="epad\src\static\grid-config\hr-employee-info.json" />
+    <None Remove="epad\src\static\grid-config\hr-nanny-info.json" />
+    <None Remove="epad\src\static\grid-config\hr-parent-info.json" />
+    <None Remove="epad\src\static\grid-config\hr-student-info.json" />
+    <None Remove="epad\src\static\variables\app.host.json" />
+    <None Remove="epad\src\static\variables\common-utils.json" />
+    <None Remove="epad\src\static\variables\config.js" />
+    <None Remove="epad\src\static\variables\group-menu-basic.json" />
+    <None Remove="epad\src\static\variables\group-menu-may.json" />
+    <None Remove="epad\src\static\variables\group-menu-ortholite.json" />
+    <None Remove="epad\src\static\variables\group-menu.json" />
+    <None Remove="epad\src\static\variables\menu.json" />
+    <None Remove="epad\src\static\variables\oidc-config.json" />
+    <None Remove="epad\src\static\variables\ssrs.json" />
+    <None Remove="epad\src\store\application.ts" />
+    <None Remove="epad\src\store\config.ts" />
+    <None Remove="epad\src\store\human-resource.ts" />
+    <None Remove="epad\src\store\index.ts" />
+    <None Remove="epad\src\store\misc.ts" />
+    <None Remove="epad\src\store\token.ts" />
+    <None Remove="epad\src\store\user.ts" />
+    <None Remove="epad\src\utils\datetime-utils.ts" />
+    <None Remove="epad\src\utils\number-utils.ts" />
+    <None Remove="epad\src\utils\string-utils.ts" />
+    <None Remove="epad\src\utils\validation-utils.ts" />
+    <None Remove="epad\src\views\activate\activate.ts" />
+    <None Remove="epad\src\views\activate\activate.vue" />
+    <None Remove="epad\src\views\home\home.ts" />
+    <None Remove="epad\src\views\home\home.vue" />
+    <None Remove="epad\src\views\layout\header\header.ts" />
+    <None Remove="epad\src\views\layout\header\header.vue" />
+    <None Remove="epad\src\views\layout\main\main.ts" />
+    <None Remove="epad\src\views\layout\main\main.vue" />
+    <None Remove="epad\src\views\layout\menu\menu.ts" />
+    <None Remove="epad\src\views\layout\menu\menu.vue" />
+    <None Remove="epad\src\views\layout\non-privilege\non-privilege.ts" />
+    <None Remove="epad\src\views\layout\non-privilege\non-privilege.vue" />
+    <None Remove="epad\src\views\layout\page-not-found\page-not-found.ts" />
+    <None Remove="epad\src\views\layout\page-not-found\page-not-found.vue" />
+    <None Remove="epad\src\views\login-oidc\login-callback\login-callback.ts" />
+    <None Remove="epad\src\views\login-oidc\login-callback\login-callback.vue" />
+    <None Remove="epad\src\views\login-oidc\login-redirect\login-redirect.ts" />
+    <None Remove="epad\src\views\login-oidc\login-redirect\login-redirect.vue" />
+    <None Remove="epad\src\views\login-oidc\signout-oidc\signout-oidc.ts" />
+    <None Remove="epad\src\views\login-oidc\signout-oidc\signout-oidc.vue" />
+    <None Remove="epad\src\views\login\login.ts" />
+    <None Remove="epad\src\views\login\login.vue" />
+    <None Remove="epad\src\views\login\login_usecaptcha.vue" />
+    <None Remove="epad\src\views\login\Recaptcha2.vue" />
+    <None Remove="epad\src\views\personal-access-token\personal-access-token.ts" />
+    <None Remove="epad\src\views\personal-access-token\personal-access-token.vue" />
+    <None Remove="epad\tsconfig.json" />
+    <None Remove="epad\vue.config.js" />
+    <None Remove="epad\yarn.lock" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="AbriLicenseDecryptor">
+      <HintPath>..\packages\AbriLicenseDecryptor\AbriLicenseDecryptor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Files\IntergratedAttendanceLogService\IntergratedAttendanceLogService.exe.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Files\IntergratedEmployeeService\IntergratedEmployeeService.exe.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Files\SDKService\SDKService.exe.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="epad\public\assets\icons\NavBar\car.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\assets\icons\NavBar\gate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\assets\icons\NavBar\Khuvucgioihan.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\assets\icons\NavBar\Tichhop.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\CustomerImport_Guest.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\CustomerImport_Guest_Mdl.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\CustomerImport_Parent.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\EmployeeLeaveDay.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Mission.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_CustomerVehicle.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_DormRegister.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_EmployeeParkingLot.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_ExcusedLateEntry.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_HR_CustomerCard.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+	  <None Update="epad\public\Template_IC_EmployeeStopped.xlsx">
+	  </None>
+    <None Update="epad\public\Template_IC_Department.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_NoAttendance.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_HR_Student_VStar.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\public\Template_IC_Employee_VStar.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\correct.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\human-three-red.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\human-three-white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\motor-white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\motor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\multiple-users-silhouette-orange.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\multiple-users-silhouette-white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\multiple-users-silhouette.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\NavBar\car.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\NavBar\gate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\truck-white.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\truck.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\icons\wrong.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\images\background_login.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\images\flaguk.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="epad\src\assets\images\flagvn.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\AttendanceLog.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\DriverInfoError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Employee.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\EmployeeLeaveDayError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\EmployeesImportError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\EmployeesImportError_VStar.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\EmployeeTransfer.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Images\backgroud.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Images\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ImportCustomerByGoogleSheetError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\IntegratedEmpService\Intergrated_Employee_Service.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\IntegratedEmpService\Intergrated_Employee_Service.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\IntegratedEmpService\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\IntegratedEmpService\Newtonsoft.Json.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\IntegratedEmpService\Service_Management.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\MissionError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ParentImportError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PrinterTestingTemplate.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ScriptFile\DeleteService.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ScriptFile\InstallService.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ScriptFile\StartService.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\ScriptFile\StopService.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\Newtonsoft.Json.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\robot.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\SDK_Interface.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\SDK_Interface.pdb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\Service_Management.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Buffers.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Buffers.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Memory.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Memory.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Numerics.Vectors.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Numerics.Vectors.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Runtime.CompilerServices.Unsafe.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Runtime.CompilerServices.Unsafe.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Threading.Channels.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Threading.Channels.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Threading.Tasks.Extensions.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\SDK_Interface\System.Threading.Tasks.Extensions.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\StudentImportError.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\StudentImportError_VStar.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\TemplateResetPassword.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_CustomerVehicle_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_DepartmentAccessedGroup_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_DormRegister_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_EmailDeclareGuest_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_EmployeeAccessedGroup_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_EmployeeParkingLot_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Data_Employee_Shift.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_EmployeeShift_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_EmployeeStopped_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_ExcusedLateEntry_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_HR_CustomerCard_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_NoAttendance_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_ScheduleDepartment_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\Template_ScheduleEmployee_Error.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\UserOnDevice.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\EmailTemplate\RulesWarningBody.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\EmailTemplate\RulesWarningBody_SendItNow.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\EmailTemplate\RulesWarningTitle.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="version.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Files\Temp\" />
+    <Folder Include="log\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\EPAD_Background\EPAD_Background.csproj" />
+    <ProjectReference Include="..\Core\EPAD_Common\EPAD_Common.csproj" />
+    <ProjectReference Include="..\Core\EPAD_Data\EPAD_Data.csproj" />
+    <ProjectReference Include="..\Core\EPAD_Logic\EPAD_Logic.csproj" />
+    <ProjectReference Include="..\Core\EPAD_Repository\EPAD_Repository.csproj" />
+    <ProjectReference Include="..\Core\EPAD_Services\EPAD_Services.csproj" />
+    <!--<ProjectReference Include="..\EPAD_Client\EPAD_Client.csproj" />-->
+  </ItemGroup>
+  
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+    <!-- Ensure Node.js is installed -->
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Message Importance="high" Text="Restoring dependencies using 'yarn'. This may take several minutes..." />
+    <!--<Exec WorkingDirectory="$(SpaRoot)" Command="yarn install" />-->
+  </Target>
+
+  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+    <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+    <!--<Exec WorkingDirectory="$(SpaRoot)" Command="yarn install" />-->
+    <Exec WorkingDirectory="$(SpaRoot)" Command="yarn build" />
+
+    <!-- Include the newly-built files in the publish output -->
+    <ItemGroup>
+      <DistFiles Include="$(SpaRoot)dist\**" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>

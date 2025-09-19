@@ -1,0 +1,10 @@
+{
+    "GlobalConfig": {
+        "AllowAdd": true,
+        "AllowEdit": true,
+        "AllowDelete": true
+    },
+    "ColumnConfig": [
+        
+    ]
+}

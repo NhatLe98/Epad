@@ -1,0 +1,1832 @@
+﻿using EPAD_Backend_Core.MainProcess;
+using EPAD_Backend_Core.WebUtilitys;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.IO;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Hosting;
+using System.Threading.Tasks;
+using EPAD_Data.Models;
+using EPAD_Data.Entities;
+using EPAD_Data;
+using EPAD_Logic;
+using EPAD_Common.Types;
+using EPAD_Common.Utility;
+
+namespace EPAD_Backend_Core.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class EmployeeInfoController : ControllerBase
+    {
+        private EPAD_Context context;
+        private ezHR_Context otherContext;
+        private IMemoryCache cache;
+        private ConfigObject _config;
+        private readonly IHostingEnvironment _hostingEnvironment;
+        private IIC_EmployeeLogic _IIC_EmployeeLogic;
+        private IHR_EmployeeLogic _IHR_EmployeeLogic;
+        private IIC_CommandLogic _IIC_CommandLogic;
+        private IIC_WorkingInfoLogic _IIC_WorkingInfoLogic;
+        private IIC_UserMasterLogic _iC_UserMasterLogic;
+        private IIC_DepartmentLogic _iC_DepartmentLogic;
+        private IIC_AuditLogic _iIC_AuditLogic;
+        public EmployeeInfoController(EPAD_Context pContext, IMemoryCache pCache,
+            ezHR_Context pOtherContext, IHostingEnvironment hostingEnvironment,
+            IIC_EmployeeLogic iIC_EmployeeLogic, IHR_EmployeeLogic iHR_EmployeeLogic,
+            IIC_CommandLogic iIC_CommandLogic, IIC_WorkingInfoLogic iIC_WorkingInfoLogic,
+            IIC_UserMasterLogic iC_UserMasterLogic, IIC_DepartmentLogic iC_DepartmentLogic,
+            IIC_AuditLogic iC_AuditLogic)
+        {
+            context = pContext;
+            otherContext = pOtherContext;
+            cache = pCache;
+            _config = ConfigObject.GetConfig(cache);
+            _hostingEnvironment = hostingEnvironment;
+            _IIC_EmployeeLogic = iIC_EmployeeLogic;
+            _IHR_EmployeeLogic = iHR_EmployeeLogic;
+            _IIC_CommandLogic = iIC_CommandLogic;
+            _IIC_WorkingInfoLogic = iIC_WorkingInfoLogic;
+            _iC_UserMasterLogic = iC_UserMasterLogic;
+            _iC_DepartmentLogic = iC_DepartmentLogic;
+            _iIC_AuditLogic = iC_AuditLogic;
+        }
+
+        [Authorize]
+        [ActionName("GetEmployeeAtPage")]
+        [HttpGet]
+        public async Task< IActionResult> GetEmployeeAtPage(int page, string filter, string departmentIndex, int limit)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            DataGridClass dataGrid = null;
+            DateTime now = DateTime.Now;
+            List<AddedParam> addedParams = new List<AddedParam>();
+
+            if (config.IntegrateDBOther == false)
+            {
+                // var countData = 0;
+                //List<Models.DTOs.HR_EmployeeReport> listEmployees = GetEmployeeReportFromDBEPAD(filter, page, ref countData, DateTime.Now, user.CompanyIndex, user.PrivilegeIndex);
+                addedParams.Add(new AddedParam { Key = "PageIndex", Value = page });
+                addedParams.Add(new AddedParam { Key = "Filter", Value = filter });
+                addedParams.Add(new AddedParam { Key = "PageSize", Value = limit });
+                addedParams.Add(new AddedParam { Key = "DepartmentIndex", Value = departmentIndex });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+                addedParams.Add(new AddedParam { Key = "TransferStatus", Value = TransferStatus.Approve });
+                addedParams.Add(new AddedParam { Key = "IsCurrentWorkingAndNoDepartment", Value = true });
+                ListDTOModel<IC_EmployeeDTO> listEmployee = _IIC_EmployeeLogic.GetPage(addedParams);
+
+                listEmployee.Data = _IIC_EmployeeLogic.CheckCurrentDepartment(listEmployee.Data);
+
+                var obj = from e in listEmployee.Data
+                          select new
+                          {
+                              EmployeeATID = e.EmployeeATID,
+                              EmployeeCode = e.EmployeeCode,
+                              FullName = e.FullName,
+                              Gender = e.Gender,
+                              CardNumber = e.CardNumber,
+                              NameOnMachine = e.NameOnMachine,
+                              DepartmentIndex = e.DepartmentIndex,
+                              _Gender = e.Gender != null ? e.Gender == 1 ? "Nam" : "Nữ" : "Nam" ,
+                              _DepartmentName = e.DepartmentName,
+                              JoinedDate = e.JoinedDate,
+                              ImageUpload = e.ImageUpload,
+                              UpdatedDate =  e.UpdatedDate
+                          };
+
+                dataGrid = new DataGridClass(listEmployee.TotalCount, obj);
+            }
+            else
+            {
+                //int countData = 0;
+                //List<DALOther.HR_EmployeeReport> listEmployee = GetEmployeeFromOtherDB(config, filter, page, ref countData, user.PrivilegeIndex);
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "PageIndex", Value = page });
+                addedParams.Add(new AddedParam { Key = "Filter", Value = filter });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = config.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+                addedParams.Add(new AddedParam { Key = "IsCurrentWorking", Value = true });
+                ListDTOModel<IC_EmployeeDTO> listHREmployee = _IHR_EmployeeLogic.GetPage(addedParams);
+                var obj = from e in listHREmployee.Data
+                          select new
+                          {
+                              EmployeeATID = e.EmployeeATID,
+                              EmployeeCode = e.EmployeeCode,
+                              FullName = e.FullName,
+                              Gender = e.Gender,
+                              CardNumber = e.CardNumber,
+                              NameOnMachine = e.NameOnMachine,
+                              DepartmentIndex = e.DepartmentIndex,
+                              _Gender = e.Gender.HasValue ? e.Gender == 1 ? "Nam" : "Nữ" : "Nam",
+                              _DepartmentName = e.DepartmentName,
+                              JoinedDate = e.JoinedDate
+                          };
+
+                dataGrid = new DataGridClass(listHREmployee.TotalCount, obj);
+            }
+
+            result = Ok(dataGrid);
+            return result;
+        }
+
+        private List<HR_EmployeeReport> GetEmployeeFromOtherDB(ConfigObject config, string filter, int page, ref int countData, int pAccountPrivilege)
+        {
+            var lstDeptIndex = context.IC_PrivilegeDepartment.Where(x => x.PrivilegeIndex == pAccountPrivilege && x.CompanyIndex == config.CompanyIndex)
+                .Select(x => x.DepartmentIndex).ToList();
+
+            string query = @"SELECT HR_Employee.EmployeeATID, HR_Employee.CompanyIndex, HR_Employee.EmployeeCode, HR_Employee.CardNumber,HR_Employee.LastName + ' ' + HR_Employee.MidName + ' ' + HR_Employee.FirstName AS FullName,
+                HR_Employee.NickName, HR_Employee.Gender, '' as NameOnMachine,HR_WorkingInfo.DepartmentIndex as DepartmentIndex,dep.[Name] as DepartmentName, HR_Employee.JoinedDate 
+                FROM HR_Employee 
+                LEFT JOIN HR_WorkingInfo ON HR_WorkingInfo.EmployeeATID = HR_Employee.EmployeeATID and HR_WorkingInfo.CompanyIndex= HR_Employee.CompanyIndex 
+                and ((HR_WorkingInfo.ToDate is null and  Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0) 
+                OR(Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))
+                LEFT OUTER JOIN HR_Department ON HR_Department.[Index] = HR_WorkingInfo.DepartmentIndex
+                LEFT OUTER JOIN HR_Position ON HR_WorkingInfo.PositionIndex = HR_Position.[Index]
+                LEFT OUTER JOIN HR_Titles ON HR_WorkingInfo.TitlesIndex = HR_Titles.[Index]
+                and(HR_WorkingInfo.ToDate is null OR
+                (Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))
+                left join HR_Department dep on dep.[Index]= HR_WorkingInfo.DepartmentIndex 
+                WHERE (HR_Employee.MarkForDelete = 0) AND HR_Employee.CompanyIndex = @CompanyIndex ";
+            List<HR_EmployeeReport> listEmployee;
+            SqlParameter paramCompany = new SqlParameter("CompanyIndex", config.CompanyIndex);
+            SqlParameter param = new SqlParameter("filter", "%" + filter + "%");
+            countData = 0;
+            if (page <= 1)
+            {
+
+                if (string.IsNullOrEmpty(filter) == false)
+                {
+                    query += " and (HR_Employee.EmployeeATID like @filter or HR_Employee.CardNumber like @filter " +
+                    "or HR_Employee.Gender like @filter or dep.[Name] like @filter " +
+                    "or HR_Employee.FirstName like @filter or HR_Employee.MidName like @filter or HR_Employee.LastName like @filter) ";
+                    var iquery = otherContext.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany).Where(x => x.DepartmentIndex == null || lstDeptIndex.Contains(x.DepartmentIndex.Value));
+                    listEmployee = iquery.Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = iquery.Count();
+                }
+                else
+                {
+                    var iquery = otherContext.HR_EmployeeReport.FromSqlRaw(query, paramCompany).Where(x => x.DepartmentIndex == null || lstDeptIndex.Contains(x.DepartmentIndex.Value));
+                    listEmployee = iquery.Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = iquery.Count();
+                }
+
+            }
+            else
+            {
+                int fromRow = GlobalParams.ROWS_NUMBER_IN_PAGE * (page - 1);
+
+                if (string.IsNullOrEmpty(filter) == false)
+                {
+                    query += " and (HR_Employee.EmployeeATID like @filter or HR_Employee.CardNumber like @filter " +
+                     "or HR_Employee.Gender like @filter or dep.[Name] like @filter " +
+                     "or HR_Employee.FirstName like @filter or HR_Employee.MidName like @filter or HR_Employee.LastName like @filter) ";
+                    var iquery = otherContext.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany).Where(x => x.DepartmentIndex == null || lstDeptIndex.Contains(x.DepartmentIndex.Value));
+                    listEmployee = iquery.OrderBy(t => t.EmployeeATID).Skip(fromRow).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = iquery.Count();
+                }
+                else
+                {
+                    var iquery = otherContext.HR_EmployeeReport.FromSqlRaw(query, paramCompany).Where(x => x.DepartmentIndex == null || lstDeptIndex.Contains(x.DepartmentIndex.Value));
+                    listEmployee = iquery.OrderBy(t => t.EmployeeATID).Skip(fromRow).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = iquery.Count();
+                }
+
+            }
+            return listEmployee;
+        }
+
+        public static List<HR_EmployeeReport> GetAllEmployeeReport(ezHR_Context pContext, ConfigObject config)
+        {
+            string query =
+                "SELECT HR_Employee.EmployeeATID, HR_Employee.CompanyIndex, HR_Employee.EmployeeCode, HR_Employee.CardNumber,HR_Employee.LastName + ' ' + HR_Employee.MidName + ' ' + HR_Employee.FirstName AS FullName," +
+                " HR_Employee.NickName, HR_Employee.Gender, '' as NameOnMachine,HR_WorkingInfo.DepartmentIndex as DepartmentIndex,dep.[Name] as DepartmentName, HR_Employee.JoinedDate " +
+                " FROM HR_Employee" +
+                " LEFT JOIN HR_WorkingInfo ON HR_WorkingInfo.EmployeeATID = HR_Employee.EmployeeATID" +
+                " and ((HR_WorkingInfo.ToDate is null and  Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0)" +
+                " OR(Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))" +
+                " LEFT OUTER JOIN HR_Department ON HR_Department.[Index] = HR_WorkingInfo.DepartmentIndex" +
+                " LEFT OUTER JOIN HR_Position ON HR_WorkingInfo.PositionIndex = HR_Position.[Index]" +
+                " LEFT OUTER JOIN HR_Titles ON HR_WorkingInfo.TitlesIndex = HR_Titles.[Index]" +
+                " and(HR_WorkingInfo.ToDate is null OR" +
+                " (Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))" +
+                " left join HR_Department dep on dep.[Index]= HR_WorkingInfo.DepartmentIndex " +
+                " WHERE (HR_Employee.MarkForDelete = 0) AND HR_Employee.CompanyIndex = " + config.CompanyIndex;
+            List<HR_EmployeeReport> listEmployee;
+            listEmployee = pContext.HR_EmployeeReport.FromSqlRaw(query).ToList();
+            return listEmployee;
+        }
+
+        public static List<HR_EmployeeReport> GetEmployeeReportByEmps(ezHR_Context pContext, ConfigObject config, List<string> pListEmp)
+        {
+            string strEmps = "";
+            for (int i = 0; i < pListEmp.Count; i++)
+            {
+                strEmps += "" + pListEmp[i] + ",";
+            }
+            if (strEmps.Length > 0)
+            {
+                strEmps = strEmps.Substring(0, strEmps.Length - 1);
+            }
+            else
+            {
+                strEmps = "''";
+            }
+            string query = "SELECT HR_Employee.EmployeeATID, HR_Employee.CompanyIndex, HR_Employee.EmployeeCode, HR_Employee.CardNumber,HR_Employee.LastName + ' ' + HR_Employee.MidName + ' ' + HR_Employee.FirstName AS FullName," +
+                " HR_Employee.NickName, HR_Employee.Gender, '' as NameOnMachine,HR_WorkingInfo.DepartmentIndex as DepartmentIndex,dep.[Name] as DepartmentName, HR_Employee.JoinedDate  " +
+                " FROM HR_Employee" +
+                " LEFT JOIN HR_WorkingInfo ON HR_WorkingInfo.EmployeeATID = HR_Employee.EmployeeATID" +
+                " and ((HR_WorkingInfo.ToDate is null and  Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0)" +
+                " OR(Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))" +
+                " LEFT OUTER JOIN HR_Department ON HR_Department.[Index] = HR_WorkingInfo.DepartmentIndex" +
+                " LEFT OUTER JOIN HR_Position ON HR_WorkingInfo.PositionIndex = HR_Position.[Index]" +
+                " LEFT OUTER JOIN HR_Titles ON HR_WorkingInfo.TitlesIndex = HR_Titles.[Index]" +
+                " and(HR_WorkingInfo.ToDate is null OR" +
+                " (Datediff(day, HR_WorkingInfo.ToDate, getdate()) <= 0 AND Datediff(day, HR_WorkingInfo.FromDate, getdate()) >= 0))" +
+                " left join HR_Department dep on dep.[Index]= HR_WorkingInfo.DepartmentIndex " +
+                " WHERE HR_Employee.EmployeeATID in (" + strEmps + ") and HR_Employee.CompanyIndex = @CompanyIndex";
+            SqlParameter paramCompany = new SqlParameter("CompanyIndex", config.CompanyIndex);
+
+            List<HR_EmployeeReport> listEmployee;
+            listEmployee = pContext.HR_EmployeeReport.FromSqlRaw(query, paramCompany).ToList();
+            return listEmployee;
+        }
+        private List<HR_EmployeeReport> GetEmployeeReportFromDBEPAD(string filter, int page, ref int countData, DateTime date, int companyIndex, int pAccountPrivilege)
+        {
+            string query = @"SELECT IC_Employee.EmployeeATID, 
+	                        IC_Employee.CompanyIndex, 
+	                        IC_Employee.EmployeeCode, 
+	                        IC_Employee.CardNumber,
+	                        IC_Employee.FullName AS FullName,
+                            '' as NickName, 
+                            IC_Employee.Gender, 
+                            IC_Employee.NameOnMachine as NameOnMachine,
+                            IC_WorkingInfo.DepartmentIndex as DepartmentIndex,
+                            dep.[Name] as DepartmentName 
+                        FROM IC_Employee LEFT JOIN IC_WorkingInfo 
+	                        ON IC_WorkingInfo.EmployeeATID = IC_Employee.EmployeeATID 
+	                        and IC_WorkingInfo.CompanyIndex= IC_Employee.CompanyIndex 
+                            and IC_WorkingInfo.[Status] = 1 
+                        left join IC_Department dep 
+                            on dep.[Index]= IC_WorkingInfo.DepartmentIndex 
+                         
+                        WHERE 
+                        (
+	                        IC_Employee.StoppedDate is null 
+	                        or 
+	                        IC_Employee.StoppedDate >  @date
+                        ) 
+                        AND IC_Employee.CompanyIndex = @CompanyIndex
+                        AND 
+                        (
+	                        dep.[Index] IS NULL
+	                        OR
+	                        dep.[Index] IN (SELECT DepartmentIndex FROM IC_PrivilegeDepartment WHERE PrivilegeIndex = @PrivilegeIndex)
+                        )
+                         AND         
+                        (
+    	                     (IC_WorkingInfo.ToDate is null and  Datediff(day, IC_WorkingInfo.FromDate, @date) >= 0) 
+                             OR
+                             (Datediff(day, IC_WorkingInfo.ToDate,  @date) <= 0 AND Datediff(day, IC_WorkingInfo.FromDate,  @date) >= 0)
+	                   )";
+            SqlParameter param = new SqlParameter("filter", "%" + filter + "%");
+            SqlParameter paramCompany = new SqlParameter("CompanyIndex", companyIndex);
+            SqlParameter paramPrivilege = new SqlParameter("PrivilegeIndex", pAccountPrivilege);
+            SqlParameter paramDate = new SqlParameter("date", date);
+
+            List<HR_EmployeeReport> listEmployee;
+
+            if (page <= 1)
+            {
+
+                if (string.IsNullOrEmpty(filter) == true)
+                {
+                    listEmployee = context.HR_EmployeeReport.FromSqlRaw(query, paramCompany, paramDate, paramPrivilege).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = context.HR_EmployeeReport.FromSqlRaw(query, paramCompany, paramDate, paramPrivilege).Count();
+                }
+                else
+                {
+                    query += " and (IC_Employee.EmployeeATID like @filter or IC_Employee.CardNumber like @filter " +
+                        "or IC_Employee.Gender like @filter or dep.[Name] like @filter " +
+                         "or IC_Employee.FullName like @filter) ";
+                    listEmployee = context.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany, paramDate, paramPrivilege).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = context.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany, paramDate, paramPrivilege).Count();
+                }
+
+            }
+            else
+            {
+                int fromRow = GlobalParams.ROWS_NUMBER_IN_PAGE * (page - 1);
+
+                if (string.IsNullOrEmpty(filter) == true)
+                {
+                    listEmployee = context.HR_EmployeeReport.FromSqlRaw(query, paramCompany, paramDate, paramPrivilege).OrderBy(t => t.EmployeeATID).Skip(fromRow).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = context.HR_EmployeeReport.FromSqlRaw(query, paramCompany, paramDate, paramPrivilege).Count();
+
+
+                }
+                else
+                {
+                    query += " and (IC_Employee.EmployeeATID like @filter or IC_Employee.CardNumber like @filter " +
+                        "or IC_Employee.Gender like @filter or dep.[Name] like @filter " +
+                         "or IC_Employee.FullName like @filter) ";
+                    listEmployee = context.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany, paramDate, paramPrivilege).OrderBy(t => t.EmployeeATID)
+                        .Skip(fromRow).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+                    countData = context.HR_EmployeeReport.FromSqlRaw(query, param, paramCompany, paramDate, paramPrivilege).Count();
+                }
+            }
+            return listEmployee;
+        }
+        public static List<HR_EmployeeReport> GetAllEmployeeReportFromDBEPAD(EPAD_Context context, DateTime date, int companyIndex)
+        {
+            string query = @"SELECT 
+                            ie.EmployeeATID, 
+                            ie.CompanyIndex, 
+                            ie.EmployeeCode, 
+                            ie.CardNumber,
+                            ie.FullName AS FullName,
+                            '' as NickName, 
+                            ie.Gender,
+                            ie.NameOnMachine as NameOnMachine,
+                            dep.[Index] as DepartmentIndex,
+                            dep.[Name] as DepartmentName 
+
+                            FROM IC_Employee ie LEFT JOIN IC_WorkingInfo  iw
+	                            ON iw.EmployeeATID = ie.EmployeeATID 
+	                            and iw.CompanyIndex = ie.CompanyIndex
+
+                            LEFT JOIN IC_Department dep 
+	                            on dep.[Index]= iw.DepartmentIndex 
+
+                            WHERE (ie.StoppedDate is null or ie.StoppedDate >  @date) 
+                            AND ie.CompanyIndex = @CompanyIndex
+                            AND Datediff(day, iw.FromDate, @date) >= 0
+                            AND (iw.ToDate is NULL OR Datediff(day, iw.ToDate, @date) <= 0 )
+                            AND iw.[Status] = 1
+                            OR iw.DepartmentIndex IS NULL";
+            SqlParameter paramCompany = new SqlParameter("CompanyIndex", companyIndex);
+            SqlParameter paramDate = new SqlParameter("date", date);
+
+            List<HR_EmployeeReport> listEmployee;
+            listEmployee = context.HR_EmployeeReport.FromSqlRaw(query, paramCompany, paramDate).ToList();
+
+            return listEmployee;
+        }
+        [Authorize]
+        [ActionName("GetEmployeeAsTree")]
+        [HttpGet]
+        public async Task<IActionResult> GetEmployeeAsTree()
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<AddedParam> addedParams = new List<AddedParam>();
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            List<EmployeeTree> listData = new List<EmployeeTree>();
+            DateTime now = DateTime.Now;
+            //use db EPAD
+            if (config.IntegrateDBOther == false)
+            {
+                IC_Company company = context.IC_Company.Where(t => t.Index == user.CompanyIndex).FirstOrDefault();
+                List<IC_Department> listDep = context.IC_Department.Where(t => t.CompanyIndex == user.CompanyIndex).ToList();
+
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+                addedParams.Add(new AddedParam { Key = "IsCurrentWorkingAndNoDepartment", Value = true });
+                List<IC_EmployeeDTO> listEmployee = _IIC_EmployeeLogic.GetMany(addedParams); //GetAllEmployeeReportFromDBEPAD(context,now, user.CompanyIndex);
+
+                // chỉ hiển thị những phòng ban dc phân quyền
+                var hsDept = user.ListDepartmentAssignedAndParent.ToHashSet();
+                listDep = listDep.Where(t => hsDept.Contains(t.Index)).ToList();
+                int id = 1; int level = 1;
+
+                EmployeeTree mainData = new EmployeeTree();
+
+                mainData.ID = -1; mainData.Code = company.Index.ToString(); mainData.Name = company.Name;
+                mainData.Type = "Company"; mainData.Level = level;
+                level++;
+
+                List<EmployeeTree> listChildrentForCompany = new List<EmployeeTree>();
+                List<IC_Department> listDepLV1 = listDep.Where(t => t.ParentIndex == null || t.ParentIndex == 0).ToList();
+                //create phòng ban 'ko có phòng ban'
+                listDepLV1.Add(new IC_Department()
+                {
+                    Index = 0,
+                    Name = "Không có phòng ban",
+                    Code = "",
+                    ParentIndex = 0,
+                    CompanyIndex = user.CompanyIndex
+                });
+
+                for (int i = 0; i < listDepLV1.Count; i++)
+                {
+                    EmployeeTree currentDep = new EmployeeTree();
+                    currentDep.ID = id++; //listDepLV1[i].Index;//Convert.ToDecimal(id + "." + (i + 1));
+                    currentDep.Code = listDepLV1[i].Code; currentDep.Name = listDepLV1[i].Name;
+                    currentDep.Type = "Department"; currentDep.Level = level;
+                    currentDep.ListChildrent = new List<EmployeeTree>();
+                    if (listDepLV1[i].Index > 0)
+                    {
+                        currentDep.ListChildrent = RecursiveGetChildrentDepartment(listDep, listEmployee, listDepLV1[i].Index, ref id, level + 1);
+                    }
+
+                    currentDep.ListChildrent.AddRange(GetListEmployeeByDepartmentIndex(listEmployee, listDepLV1[i].Index, ref id, level + 1));
+
+                    listChildrentForCompany.Add(currentDep);
+                }
+                mainData.ListChildrent = listChildrentForCompany;
+                listData.Add(mainData);
+            }
+            else //use other db
+            {
+                HR_Company company = otherContext.HR_Company.Where(t => t.Index == config.CompanyIndex).FirstOrDefault();
+                if (company == null)
+                {
+                    return NoContent();
+                }
+                List<HR_Department> listDep = otherContext.HR_Department.Where(t => t.CompanyIndex == config.CompanyIndex).ToList();
+                List<HR_EmployeeReport> listEmployee = GetAllEmployeeReport(otherContext, config);
+                // chỉ hiển thị những phòng ban dc phân quyền
+                listDep = listDep.Where(t => user.ListDepartmentAssignedAndParent.Contains(t.Index)).ToList();
+                int id = 1; int level = 1;
+
+                EmployeeTree mainData = new EmployeeTree();
+
+                mainData.ID = -1; mainData.Code = company.Index.ToString(); mainData.Name = company.Name;
+                mainData.Type = "Company"; mainData.Level = level;
+                level++;
+                List<EmployeeTree> listChildrentForCompany = new List<EmployeeTree>();
+                List<HR_Department> listDepLV1 = listDep.Where(t => t.ParentIndex == null || t.ParentIndex == 0).ToList();
+                listDepLV1.Add(new HR_Department()
+                {
+                    Index = id++,
+                    Name = "Không có phòng ban",
+                    NameInEng = "Not in department",
+                    Code = "",
+                    ParentIndex = 0,
+                    CompanyIndex = user.CompanyIndex
+                });
+                for (int i = 0; i < listDepLV1.Count; i++)
+                {
+                    EmployeeTree currentDep = new EmployeeTree();
+                    currentDep.ID = id++;// listDepLV1[i].Index;// Convert.ToDecimal(id + "." + (i + 1));
+                    currentDep.Code = listDepLV1[i].Code; currentDep.Name = listDepLV1[i].Name;
+                    currentDep.Type = "Department"; currentDep.Level = level;
+                    if (listDepLV1[i].Index > 0)
+                    {
+                        currentDep.ListChildrent = RecursiveGetChildrentDepartment_DBOther(listDep, listEmployee, int.Parse(listDepLV1[i].Index.ToString()), ref id, level + 1);
+                    }
+                    currentDep.ListChildrent.AddRange(GetListEmployeeByDepartmentIndex_DBOther(listEmployee, int.Parse(listDepLV1[i].Index.ToString()), ref id, level + 1));
+
+                    listChildrentForCompany.Add(currentDep);
+                }
+                mainData.ListChildrent = listChildrentForCompany;
+                listData.Add(mainData);
+            }
+
+
+            result = Ok(listData);
+            return result;
+        }
+
+        private List<EmployeeTree> RecursiveGetChildrentDepartment(List<IC_Department> listDep, List<IC_EmployeeDTO> listEmployee, int pCurrentIndex, ref int pId, int pLevel)
+        {
+            List<IC_Department> listChildrent = listDep.Where(t => t.ParentIndex == pCurrentIndex).ToList();
+            List<EmployeeTree> listDepReturn = new List<EmployeeTree>();
+            if (listChildrent.Count > 0)
+            {
+                for (int i = 0; i < listChildrent.Count; i++)
+                {
+                    EmployeeTree currentDep = new EmployeeTree();
+                    currentDep.ID = pId++;//listChildrent[i].Index;//Convert.ToDecimal(pId + "." + (i + 1)); 
+                    currentDep.Code = listChildrent[i].Code; ; currentDep.Name = listChildrent[i].Name;
+                    currentDep.Type = "Department"; currentDep.Level = pLevel;
+                    currentDep.ListChildrent = RecursiveGetChildrentDepartment(listDep, listEmployee, listChildrent[i].Index, ref pId, pLevel + 1);
+                    currentDep.ListChildrent.AddRange(GetListEmployeeByDepartmentIndex(listEmployee, listChildrent[i].Index, ref pId, pLevel + 1));
+
+                    listDepReturn.Add(currentDep);
+                }
+            }
+
+            return listDepReturn;
+        }
+
+        private List<EmployeeTree> GetListEmployeeByDepartmentIndex(List<IC_EmployeeDTO> listEmployee, int pDepIndex, ref int pId, int pLevel)
+        {
+            List<IC_EmployeeDTO> listEmp;
+            if (pDepIndex > 0)
+            {
+                listEmp = listEmployee.Where(t => t.DepartmentIndex == pDepIndex).ToList();
+            }
+            else
+            {
+                listEmp = listEmployee.Where(t => t.DepartmentIndex == 0 || t.DepartmentIndex == null).ToList();
+            }
+            List<EmployeeTree> listEmpReturn = new List<EmployeeTree>();
+            for (int i = 0; i < listEmp.Count; i++)
+            {
+                EmployeeTree currentEmp = new EmployeeTree();
+                currentEmp.EmployeeATID = listEmp[i].EmployeeATID;
+                currentEmp.ID = pId++;//pId + "." + (i + 1); 
+                currentEmp.Code = listEmp[i].EmployeeATID; ; currentEmp.Name = listEmp[i].EmployeeATID + "-" + listEmp[i].FullName;
+                currentEmp.Type = "Employee"; currentEmp.Level = pLevel;
+                if (listEmp[i].Gender != null)
+                    currentEmp.Gender = listEmp[i].Gender.Value == 2 ? "Female" : listEmp[i].Gender.Value == 1 ? "Male" : "Other";
+
+                listEmpReturn.Add(currentEmp);
+            }
+            return listEmpReturn;
+        }
+
+        private List<EmployeeTree> RecursiveGetChildrentDepartment_DBOther(List<HR_Department> listDep, List<HR_EmployeeReport> listEmployee, int pCurrentIndex, ref int pId, int pLevel)
+        {
+            List<HR_Department> listChildrent = listDep.Where(t => t.ParentIndex == pCurrentIndex).ToList();
+            List<EmployeeTree> listDepReturn = new List<EmployeeTree>();
+            if (listChildrent.Count > 0)
+            {
+                for (int i = 0; i < listChildrent.Count; i++)
+                {
+                    EmployeeTree currentDep = new EmployeeTree();
+                    currentDep.ID = pId++;//listChildrent[i].Index;//Convert.ToDecimal(pId + "." + (i + 1)); 
+                    currentDep.Code = listChildrent[i].Code; ; currentDep.Name = listChildrent[i].Name;
+                    currentDep.Type = "Department"; currentDep.Level = pLevel;
+                    currentDep.ListChildrent = RecursiveGetChildrentDepartment_DBOther(listDep, listEmployee, int.Parse(listChildrent[i].Index.ToString()), ref pId, pLevel + 1);
+                    currentDep.ListChildrent.AddRange(GetListEmployeeByDepartmentIndex_DBOther(listEmployee, int.Parse(listChildrent[i].Index.ToString()), ref pId, pLevel + 1));
+
+                    listDepReturn.Add(currentDep);
+                }
+            }
+
+            return listDepReturn;
+        }
+
+        private List<EmployeeTree> GetListEmployeeByDepartmentIndex_DBOther(List<HR_EmployeeReport> listEmployee, int pDepIndex, ref int pId, int pLevel)
+        {
+            List<HR_EmployeeReport> listEmp = new List<HR_EmployeeReport>();
+            if (pDepIndex == 0)
+            {
+                listEmp = listEmployee.Where(t => t.DepartmentIndex == null || t.DepartmentIndex.Value == 0).ToList();
+            }
+            else
+            {
+                listEmp = listEmployee.Where(t => t.DepartmentIndex == pDepIndex).ToList();
+            }
+
+            List<EmployeeTree> listEmpReturn = new List<EmployeeTree>();
+            for (int i = 0; i < listEmp.Count; i++)
+            {
+                EmployeeTree currentEmp = new EmployeeTree();
+                currentEmp.EmployeeATID = listEmp[i].EmployeeATID.PadLeft(_config.MaxLenghtEmployeeATID,'0');
+                currentEmp.ID = pId++;//pId + "." + (i + 1); 
+                currentEmp.Code = listEmp[i].EmployeeATID; ; currentEmp.Name = "(" + listEmp[i].EmployeeATID + ")" + listEmp[i].FullName;
+                currentEmp.Type = "Employee"; currentEmp.Level = pLevel;
+                if (listEmp[i].Gender != null)
+                    currentEmp.Gender = listEmp[i].Gender.Value == false ? "Female" : "Male";
+
+                listEmpReturn.Add(currentEmp);
+            }
+            return listEmpReturn;
+        }
+
+        [Authorize]
+        [ActionName("AddEmployee")]
+        [HttpPost]
+        public IActionResult AddEmployee([FromBody] EmployeParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (EmployeParam)Misc.RemoveWhiteSpace(param);
+
+            if (param.EmployeeATID == "" || param.FullName == "")
+            {
+                return BadRequest("PleaseFillAllRequiredFields");
+            }
+
+            IC_Employee checkData = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID).FirstOrDefault();
+            if (checkData != null)
+            {
+                return Conflict("EmployeeATIDIsExist");
+            }
+
+            IC_Employee employee = new IC_Employee();
+            employee.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+            employee.CompanyIndex = user.CompanyIndex;
+            employee.EmployeeCode = param.EmployeeCode;
+            employee.FullName = param.FullName;
+            employee.CardNumber = param.CardNumber;
+            employee.NameOnMachine = param.NameOnMachine;
+            employee.Gender = param.Gender;
+            employee.DepartmentIndex = param.DepartmentIndex;
+            employee.CreatedDate = DateTime.Now;
+            employee.UpdatedDate = DateTime.Now;
+            employee.UpdatedUser = user.UserName;
+            employee.JoinedDate = param.JoinedDate;
+            context.IC_Employee.Add(employee);
+
+            
+
+            IC_UserMasterDTO userMaster = new IC_UserMasterDTO();
+            userMaster.EmployeeATID = employee.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+            userMaster.CompanyIndex = employee.CompanyIndex;
+            userMaster.CardNumber = employee.CardNumber;
+            userMaster.NameOnMachine = employee.NameOnMachine;
+            userMaster.Privilege = 0;
+            userMaster.FaceIndex = 50;
+            userMaster.CreatedDate = DateTime.Now;
+            userMaster.UpdatedUser = employee.UpdatedUser;
+            if (!string.IsNullOrWhiteSpace(param.ImageUpload)) {
+                userMaster.FaceV2_TemplateBIODATA = param.ImageUpload;
+                userMaster.FaceV2_Content = param.ImageUpload;
+                userMaster.FaceV2_Size = param.ImageUpload.Length;
+                userMaster.FaceV2_Type = 9;
+                userMaster.FaceV2_No = 0;
+                userMaster.FaceV2_MajorVer = 5;
+                userMaster.FaceV2_MinorVer = 8;
+                userMaster.FaceV2_Valid = 1;
+                userMaster.FaceV2_Format = 0;
+                userMaster.FaceV2_Index = 0;
+                userMaster.FaceV2_Duress = 0;
+            }
+            if (param.ListFinger != null && param.ListFinger.Count > 0)
+            {
+
+                userMaster.FingerData0 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 0);
+                userMaster.FingerData1 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 1);
+                userMaster.FingerData2 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 2);
+                userMaster.FingerData3 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 3);
+                userMaster.FingerData4 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 4);
+                userMaster.FingerData5 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 5);
+                userMaster.FingerData6 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 6);
+                userMaster.FingerData7 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 7);
+                userMaster.FingerData8 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 8);
+                userMaster.FingerData9 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 9);
+            }
+            _iC_UserMasterLogic.CheckExistedOrCreate(userMaster);
+
+            IC_WorkingInfoDTO workingInfo = new IC_WorkingInfoDTO()
+            {
+                CompanyIndex = user.CompanyIndex,
+                EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                DepartmentIndex = param.DepartmentIndex,
+                FromDate = param.JoinedDate,
+                ToDate = null,
+                UpdatedDate = DateTime.Now,
+                UpdatedUser = user.UserName,
+                Status = (short)TransferStatus.Approve
+            };
+            _IIC_WorkingInfoLogic.CheckUpdateOrInsert(workingInfo);
+
+            context.SaveChanges();
+
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_Employee";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Added;
+            audit.Description = AuditType.Added.ToString() + "Employee: " + param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+
+            if (param.DepartmentIndex > 0)
+            {
+                _IIC_CommandLogic.SyncWithEmployee(new List<string> { param.EmployeeATID }, user.CompanyIndex);
+            }
+
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("ImportImployee")]
+        [HttpPost]
+        public IActionResult ImportImployee([FromBody] List<EmployeParam> listParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            List<IC_Employee> listData = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex).ToList();
+            DateTime now = DateTime.Now;
+
+            int rowSuccess = 0; int rowError = 0;
+            int rowAdd = 0; int rowUpdate = 0;
+            StringBuilder message = new StringBuilder();
+            for (int i = 0; i < listParams.Count; i++)
+            {
+                IC_Employee employee = listData.Find(t => t.EmployeeATID == listParams[i].EmployeeATID);
+                try
+                {
+                    IC_DepartmentDTO department = new IC_DepartmentDTO();
+                    department.Name = listParams[i].DepartmentCode;
+                    department.Location = "";
+                    department.Description = "";
+                    department.Code = listParams[i].DepartmentCode;
+                    department.ParentIndex = null;
+                    department.CompanyIndex = user.CompanyIndex;
+                    department.CreatedDate = DateTime.Now;
+                    department.UpdatedDate = DateTime.Now;
+                    department.UpdatedUser = user.UserName;
+
+                    department = _iC_DepartmentLogic.CheckExistedOrCreate(department);
+
+                    if (employee != null)
+                    {
+                        employee.EmployeeCode = listParams[i].EmployeeCode;
+                        employee.FullName = listParams[i].FullName;
+                        employee.Gender = listParams[i].Gender;
+                        employee.DepartmentIndex = (int)department.Index;
+                        employee.NameOnMachine = listParams[i].NameOnMachine;
+                        employee.UpdatedDate = now;
+                        employee.UpdatedUser = user.UserName;
+
+                        rowUpdate++;
+                    }
+                    else
+                    {
+                        employee = new IC_Employee();
+                        employee.EmployeeATID = listParams[i].EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                        employee.CompanyIndex = user.CompanyIndex;
+                        employee.EmployeeCode = listParams[i].EmployeeCode;
+                        employee.FullName = listParams[i].FullName;
+                        employee.NameOnMachine = listParams[i].NameOnMachine;
+                        employee.Gender = listParams[i].Gender;
+                        employee.DepartmentIndex = (int)department.Index;
+
+                        employee.CreatedDate = now;
+
+                        employee.UpdatedDate = now;
+                        employee.UpdatedUser = user.UserName;
+
+                        context.IC_Employee.Add(employee);
+                        rowAdd++;
+                    }
+
+                    IC_WorkingInfoDTO workingInfo = new IC_WorkingInfoDTO()
+                    {
+                        CompanyIndex = user.CompanyIndex,
+                        EmployeeATID = listParams[i].EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                        DepartmentIndex = (int)department.Index,
+                        FromDate = now,
+                        ToDate = null,
+                        UpdatedDate = now,
+                        UpdatedUser = user.UserName,
+                        Status = (short)TransferStatus.Approve
+                    };
+                    _IIC_WorkingInfoLogic.CheckExistedOrCreate(workingInfo);
+
+                    IC_UserMasterDTO userMaster = new IC_UserMasterDTO();
+                    userMaster.EmployeeATID = employee.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                    userMaster.CompanyIndex = employee.CompanyIndex;
+                    userMaster.CardNumber = employee.CardNumber;
+                    userMaster.Privilege = 0;
+                    userMaster.NameOnMachine = employee.NameOnMachine;
+                    userMaster.CreatedDate = DateTime.Now;
+                    userMaster.UpdatedUser = employee.UpdatedUser;
+                    _iC_UserMasterLogic.CheckExistedOrCreate(userMaster);
+                    rowSuccess++;
+                }
+                catch (Exception ex)
+                {
+                    rowError++;
+                    message.Append("Lỗi tại dòng " + i + ". " + ex.Message);
+                }
+
+            }
+
+            context.SaveChanges();
+            message.Insert(0, "Số dòng thành công: " + rowSuccess + "\n"
+                + "Số dòng thất bại: " + rowError + "\n"
+                + "Số dòng thêm mới: " + rowAdd + "\n"
+                + "Số dòng cập nhật: " + rowUpdate + "\n");
+
+            result = Ok(message.ToString());
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateEmployee")]
+        [HttpPost]
+        public IActionResult UpdateEmployee([FromBody] EmployeParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (EmployeParam)Misc.RemoveWhiteSpace(param);
+            IC_Employee employee = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID).FirstOrDefault();
+            if (employee == null)
+            {
+                return NotFound("EmployeeNotExist");
+            }
+
+            employee.EmployeeCode = param.EmployeeCode;
+            employee.FullName = param.FullName;
+            employee.Gender = param.Gender;
+            employee.CardNumber = param.CardNumber;
+            employee.NameOnMachine = param.NameOnMachine;
+            employee.DepartmentIndex = param.DepartmentIndex;
+            employee.UpdatedDate = DateTime.Now;
+            employee.UpdatedUser = user.UserName;
+            employee.JoinedDate = param.JoinedDate;
+            context.SaveChanges();
+
+            IC_UserMasterDTO userMaster = new IC_UserMasterDTO();
+            userMaster.EmployeeATID = employee.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+            userMaster.CompanyIndex = employee.CompanyIndex;
+            userMaster.CardNumber = employee.CardNumber;
+            userMaster.NameOnMachine = employee.NameOnMachine;
+            userMaster.UpdatedDate = DateTime.Now;
+            userMaster.UpdatedUser = employee.UpdatedUser;
+            if (!string.IsNullOrWhiteSpace(param.ImageUpload))
+            {
+                userMaster.FaceV2_TemplateBIODATA = param.ImageUpload;
+                userMaster.FaceV2_Content = param.ImageUpload;
+                userMaster.FaceV2_Size = param.ImageUpload.Length;
+                userMaster.FaceV2_Type = 9;
+                userMaster.FaceV2_No = 0;
+                userMaster.FaceV2_MajorVer = 5;
+                userMaster.FaceV2_MinorVer = 8;
+                userMaster.FaceV2_Valid = 1;
+                userMaster.FaceV2_Format = 0;
+                userMaster.FaceV2_Index = 0;
+                userMaster.FaceV2_Duress = 0;
+            }
+            if (param.ListFinger != null && param.ListFinger.Count > 0)
+            {
+
+                userMaster.FingerData0 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 0);
+                userMaster.FingerData1 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 1);
+                userMaster.FingerData2 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 2);
+                userMaster.FingerData3 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 3);
+                userMaster.FingerData4 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 4);
+                userMaster.FingerData5 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 5);
+                userMaster.FingerData6 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 6);
+                userMaster.FingerData7 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 7);
+                userMaster.FingerData8 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 8);
+                userMaster.FingerData9 = _iC_UserMasterLogic.GetFingerDataListString(param.ListFinger, 9);
+            }
+            _iC_UserMasterLogic.SaveAndOverwriteList(new List<IC_UserMasterDTO> { userMaster });
+
+            IC_WorkingInfoDTO workingInfo = new IC_WorkingInfoDTO()
+            {
+                CompanyIndex = user.CompanyIndex,
+                EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                DepartmentIndex = param.DepartmentIndex,
+                FromDate = param.JoinedDate,
+                ToDate = null,
+                UpdatedDate = DateTime.Now,
+                UpdatedUser = user.UserName,
+                Status = (int)TransferStatus.Approve
+            };
+
+            _IIC_WorkingInfoLogic.CheckUpdateOrInsert(workingInfo);
+
+
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_Employee";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Modified;
+            audit.Description = AuditType.Modified.ToString() + "Employee: " + param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+
+            if (param.DepartmentIndex > 0)
+            {
+                _IIC_CommandLogic.SyncWithEmployee(new List<string> { param.EmployeeATID }, user.CompanyIndex);
+            }
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("DeleteEmployee")]
+        [HttpPost]
+        public IActionResult DeleteEmployee([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            var paramEmployee = addedParams.FirstOrDefault(e => e.Key == "ListEmployeeATID");
+            var paramDeleteOndevice = addedParams.FirstOrDefault(e => e.Key == "IsDeleteOnDevice");
+            var lsemployeeATID = new List<string>();
+            var isDeleteOnDevice = false;
+            if (paramEmployee != null)
+            {
+                lsemployeeATID = JsonConvert.DeserializeObject<List<string>>(paramEmployee.Value.ToString());
+            }
+            else {
+                return BadRequest("");
+            }
+            var listPadleft = new List<string>();
+            foreach (var item in lsemployeeATID)
+            {
+                listPadleft.Add(item.PadLeft(_config.MaxLenghtEmployeeATID, '0'));
+            }
+            var existedEmployee = context.IC_Employee.Where(e => e.CompanyIndex == user.CompanyIndex && listPadleft.Contains(e.EmployeeATID)).ToList();
+            if (paramDeleteOndevice != null) {
+                isDeleteOnDevice = Convert.ToBoolean(paramDeleteOndevice.Value);
+                if (isDeleteOnDevice) {
+                    if (existedEmployee != null)
+                    {
+                        listPadleft = existedEmployee.Select(e => e.EmployeeATID).ToList();
+                        var lsSerialHw = context.IC_Device.Where(e => e.CompanyIndex == user.CompanyIndex).Select(e => e.SerialNumber).ToList();
+
+                        IC_UserinfoOnMachineParam paramUserOnMachine = new IC_UserinfoOnMachineParam();
+                        paramUserOnMachine.ListEmployeeaATID = listPadleft;
+                        paramUserOnMachine.CompanyIndex = user.CompanyIndex;
+                        paramUserOnMachine.AuthenMode = "";
+                        paramUserOnMachine.FullInfo = false;
+                        List<UserInfoOnMachine> lstUser = _IIC_CommandLogic.GetListUserInfoOnMachine(paramUserOnMachine);
+
+                        IC_CommandParamDTO commandParam = new IC_CommandParamDTO();
+                        commandParam.IsOverwriteData = false;
+                        commandParam.Action = CommandAction.DeleteUserById;
+                        commandParam.AuthenMode = "";
+                        commandParam.FromTime = DateTime.Now;
+                        commandParam.ToTime = DateTime.Now;
+                        commandParam.ListEmployee = lstUser;
+                        commandParam.ListSerialNumber = lsSerialHw;
+                        commandParam.Privilege = GlobalParams.DevicePrivilege.SDKStandardRole;
+                        commandParam.ExternalData = "";
+                        List<CommandResult> lstCmd = _IIC_CommandLogic.CreateListCommands(commandParam);
+                        if (lstCmd != null && lstCmd.Count() > 0)
+                        {
+                            IC_GroupCommandParamDTO groupCommand = new IC_GroupCommandParamDTO();
+                            groupCommand.CompanyIndex = user.CompanyIndex;
+                            groupCommand.UserName = user.UserName;
+                            groupCommand.ListCommand = lstCmd;
+                            groupCommand.GroupName = CommandAction.DeleteUserById.ToString();
+                            groupCommand.EventType = "";
+                            _IIC_CommandLogic.CreateGroupCommands(groupCommand);
+                        }
+                    }
+                }
+            }
+
+            var listEmp = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && listPadleft.Contains(t.EmployeeATID)).ToArray();
+            var listWorkingInfo = context.IC_WorkingInfo.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+            var listWorkingTransfer = context.IC_EmployeeTransfer.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+            var listUserMaster = context.IC_UserMaster.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+
+            try
+            {
+                context.IC_Employee.RemoveRange(listEmp);
+                context.IC_WorkingInfo.RemoveRange(listWorkingInfo);
+                context.IC_EmployeeTransfer.RemoveRange(listWorkingTransfer);
+                context.IC_UserMaster.RemoveRange(listUserMaster);
+                context.SaveChanges();
+                // Add audit log
+                IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+                audit.TableName = "IC_Employee";
+                audit.UserName = user.UserName;
+                audit.CompanyIndex = user.CompanyIndex;
+                audit.State = AuditType.Deleted;
+                audit.Description = AuditType.Deleted.ToString() + "Employee: " + listEmp.Select(e=>e.EmployeeATID).ToString();
+                audit.DateTime = DateTime.Now;
+                _iIC_AuditLogic.Create(audit);
+                result = Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("AddEmployeeFromExcel")]
+        [HttpPost]
+        public IActionResult AddEmployeeFromExcel([FromBody] List<IC_EmployeeImportDTO> param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IActionResult result = Unauthorized();
+            int departmentIndex = 0;
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            // validation data
+            List<IC_EmployeeImportDTO> listError = new List<IC_EmployeeImportDTO>();
+
+            listError = _IIC_EmployeeLogic.ValidationImportEmployee(param);
+            var message = "";
+            string sWebRootFolder = _hostingEnvironment.ContentRootPath;
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, @"Files/EmployeesImportError.xlsx");
+            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, @"Files/EmployeesImportError.xlsx"));
+            if (listError != null && listError.Count() > 0) {
+                var listEmployeeIDError = listError.Select(e => e.EmployeeATID).ToList();
+                param = param.Where(e => !listEmployeeIDError.Contains(e.EmployeeATID)).ToList();
+                message = listError.Count().ToString();
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("EmployeeError");
+                    var currentRow = 1;
+                    worksheet.Cell(currentRow, 1).Value = "Mã chấm công (*)";
+                    worksheet.Cell(currentRow, 2).Value = "Mã nhân viên";
+                    worksheet.Cell(currentRow, 3).Value = "Họ tên";
+                    worksheet.Cell(currentRow, 4).Value = "Mã thẻ";
+                    worksheet.Cell(currentRow, 5).Value = "Tên trên máy";
+                    worksheet.Cell(currentRow, 6).Value = "Giới tính (Nam)";
+                    worksheet.Cell(currentRow, 7).Value = "Phòng ban";
+                    worksheet.Cell(currentRow, 8).Value = "Lỗi";
+
+                    for (int i = 1; i < 9; i++)
+                    {
+                        worksheet.Cell(1, i).Style.Fill.BackgroundColor = XLColor.Yellow;
+                        worksheet.Cell(1, i).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Column(i).Width = 20;
+                    }
+
+                    foreach (var users in listError)
+                    {
+                        currentRow++;
+                        worksheet.Cell(currentRow, 1).Value = users.EmployeeATID;
+                        worksheet.Cell(currentRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(currentRow, 1).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeATID.Length, '0');
+
+                        worksheet.Cell(currentRow, 2).Value = users.EmployeeCode;
+                        worksheet.Cell(currentRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if (!string.IsNullOrWhiteSpace(users.EmployeeCode))
+                            worksheet.Cell(currentRow, 2).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeCode.Length, '0');
+
+                        worksheet.Cell(currentRow, 3).Value = users.FullName;
+                        worksheet.Cell(currentRow, 3).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 4).Value = users.CardNumber;
+                        worksheet.Cell(currentRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if (!string.IsNullOrWhiteSpace(users.CardNumber))
+                            worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0".PadLeft(users.CardNumber.Length, '0');
+
+                        worksheet.Cell(currentRow, 5).Value = users.NameOnMachine;
+                        worksheet.Cell(currentRow, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 6).Value = users.Gender;
+                        worksheet.Cell(currentRow, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 7).Value = users.DepartmentName;
+                        worksheet.Cell(currentRow, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 8).Value = users.ErrorMessage;
+                        worksheet.Cell(currentRow, 8).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+                   
+                    workbook.SaveAs(file.FullName);
+                }
+
+            }
+
+
+            var listDepartmet = param.GroupBy(e => e.DepartmentName).Select(e => e.First()).ToList() ;
+            List<IC_DepartmentDTO> listCreate = listDepartmet.Where(e=>!string.IsNullOrEmpty(e.DepartmentName)).Select(e => new IC_DepartmentDTO {
+                Code = e.DepartmentName.Trim(),
+                Name =e.DepartmentName.Trim(),
+                CompanyIndex = user.CompanyIndex,
+                ParentIndex = 0,
+                UpdatedDate = DateTime.Now,
+                UpdatedUser = user.FullName,
+                CreatedDate = DateTime.Now
+            }).ToList();
+            listCreate = _iC_DepartmentLogic.CheckExistedOrCreateList(listCreate);
+
+            var listEmployeeID = param.Select(e => e.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0')).ToList();
+
+            var listEmployeeDB = new List<IC_Employee>();
+            var listWorkingInfoDB = new List<IC_WorkingInfo>();
+            var listUserMasterDB = new List<IC_UserMaster>();
+            
+
+            if (listEmployeeID.Count > 10000)
+            {
+                var listSplitEmployeeID = CommonUtils.SplitList(listEmployeeID, 10000);
+                foreach (var listEmployeeSplit in listSplitEmployeeID) {
+                    var resultEmployee = context.IC_Employee.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeSplit.Contains(e.EmployeeATID)).ToList();
+                    var resultWorkingInfo = context.IC_WorkingInfo.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeSplit.Contains(e.EmployeeATID)
+<<<<<<< HEAD
+                       && e.Status == (short)TransferStatus.Approve && DateTime.Now.Date <= e.FromDate.Date && e.ToDate == null).OrderByDescending(e => e.FromDate).ToList();
+=======
+                       && e.Status == (short)GlobalParams.TransferStatus.Approve 
+                       && e.FromDate.Date <= DateTime.Now.Date && e.ToDate == null).OrderByDescending(e => e.FromDate).ToList();
+>>>>>>> ver2
+                    var resultUserMaster = context.IC_UserMaster.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeSplit.Contains(e.EmployeeATID)).ToList();
+                    listEmployeeDB.AddRange(resultEmployee);
+                    listWorkingInfoDB.AddRange(resultWorkingInfo);
+                    listUserMasterDB.AddRange(resultUserMaster);
+                }
+            }
+            else
+            {
+                listEmployeeDB = context.IC_Employee.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeID.Contains(e.EmployeeATID)).ToList();
+                listWorkingInfoDB = context.IC_WorkingInfo.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeID.Contains(e.EmployeeATID)
+<<<<<<< HEAD
+                   && e.Status == (short)TransferStatus.Approve && DateTime.Now.Date <= e.FromDate.Date && e.ToDate == null).OrderByDescending(e => e.FromDate).ToList();
+=======
+                   && e.Status == (short)GlobalParams.TransferStatus.Approve 
+                   && e.FromDate.Date <= DateTime.Now.Date && e.ToDate == null).OrderByDescending(e => e.FromDate).ToList();
+>>>>>>> ver2
+                listUserMasterDB = context.IC_UserMaster.Where(e => e.CompanyIndex == user.CompanyIndex && listEmployeeID.Contains(e.EmployeeATID)).ToList();
+            }
+
+            List<IC_EmployeeDTO> listEmployee = new List<IC_EmployeeDTO>();
+            List<IC_WorkingInfoDTO> listWorkingInfo = new List<IC_WorkingInfoDTO>();
+            List<IC_UserMasterDTO> listUserMaster = new List<IC_UserMasterDTO>();
+            
+
+            foreach (IC_EmployeeImportDTO item in param)
+            {
+                try
+                {
+                    var department = new IC_DepartmentDTO();
+                    department.Index = 0;
+                    if (listCreate != null)
+                    {
+                        department = listCreate.FirstOrDefault(e => !string.IsNullOrWhiteSpace(item.DepartmentName) && e.Code.ToLower() == item.DepartmentName.ToLower());
+                        if (department == null)
+                        {
+                            department.Index = 0;
+                        }
+                    }
+
+                    item.EmployeeATID = item.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+
+                    var existedEmployee = listEmployeeDB.FirstOrDefault(e => e.EmployeeATID == item.EmployeeATID);
+                    if (existedEmployee != null)
+                    {
+                        existedEmployee.CardNumber = item.CardNumber;
+                        existedEmployee.EmployeeCode = item.EmployeeCode;
+                        existedEmployee.FullName = item.FullName;
+                        existedEmployee.NameOnMachine = string.IsNullOrWhiteSpace(item.NameOnMachine) ? "" : item.NameOnMachine;
+                        if (existedEmployee.NameOnMachine.Length > 20)
+                        {
+                            existedEmployee.NameOnMachine = existedEmployee.NameOnMachine.Substring(0, 20);
+                        }
+                        existedEmployee.DepartmentIndex = (short)department.Index;
+                        existedEmployee.Gender = (short)item.Gender;
+                        existedEmployee.UpdatedDate = DateTime.Now;
+                        existedEmployee.UpdatedUser = user.UserName;
+                        context.IC_Employee.Update(existedEmployee);
+                    }
+                    else
+                    {
+                        existedEmployee = new IC_Employee();
+                        existedEmployee.CompanyIndex = user.CompanyIndex;
+                        existedEmployee.EmployeeATID = item.EmployeeATID;
+                        existedEmployee.EmployeeCode = item.EmployeeCode;
+                        existedEmployee.NameOnMachine = string.IsNullOrWhiteSpace(item.NameOnMachine) ? "" : item.NameOnMachine;
+                        if (existedEmployee.NameOnMachine.Length > 20)
+                        {
+                            existedEmployee.NameOnMachine = existedEmployee.NameOnMachine.Substring(0, 20);
+                        }
+                        existedEmployee.DepartmentIndex = (short)department.Index;
+                        existedEmployee.FullName = item.FullName;
+                        existedEmployee.Gender = (short)item.Gender;
+                        existedEmployee.CardNumber = item.CardNumber;
+                        existedEmployee.JoinedDate = DateTime.Now;
+                        existedEmployee.UpdatedDate = DateTime.Now;
+                        existedEmployee.UpdatedUser = user.UserName;
+                        existedEmployee.CreatedDate = DateTime.Now;
+                        context.IC_Employee.Add(existedEmployee);
+                    }
+
+
+<<<<<<< HEAD
+                var existedWorkingInfo = listWorkingInfoDB.FirstOrDefault(e=>e.EmployeeATID == item.EmployeeATID);
+                if (existedWorkingInfo == null)
+                {
+                    existedWorkingInfo = new IC_WorkingInfo();
+                    existedWorkingInfo.EmployeeATID = existedEmployee.EmployeeATID;
+                    existedWorkingInfo.CompanyIndex = existedEmployee.CompanyIndex;
+                    existedWorkingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                    existedWorkingInfo.FromDate = DateTime.Now;
+                    existedWorkingInfo.IsManager = false;
+                    existedWorkingInfo.ApprovedDate = DateTime.Now;
+                    existedWorkingInfo.UpdatedUser = user.UserName;
+                    existedWorkingInfo.Status = (short)TransferStatus.Approve;
+                    context.IC_WorkingInfo.Add(existedWorkingInfo);
+                }
+                else if (existedWorkingInfo.DepartmentIndex == 0 && existedWorkingInfo.DepartmentIndex != existedEmployee.DepartmentIndex && existedEmployee.DepartmentIndex != 0)
+                {
+                    existedWorkingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                    existedWorkingInfo.IsSync = null;
+                    existedWorkingInfo.Status = (short)TransferStatus.Approve;
+                    existedWorkingInfo.FromDate = DateTime.Now;
+                    existedWorkingInfo.ApprovedDate = DateTime.Now;
+                    existedWorkingInfo.UpdatedUser = user.UserName;
+                    existedWorkingInfo.UpdatedDate = DateTime.Now;
+                    context.IC_WorkingInfo.Update(existedWorkingInfo);
+                }
+                else if (existedWorkingInfo.DepartmentIndex > 0 && existedWorkingInfo.FromDate.Date < DateTime.Now.Date && existedWorkingInfo.DepartmentIndex != existedEmployee.DepartmentIndex && existedEmployee.DepartmentIndex != 0)
+                {
+                    var workingInfo = new IC_WorkingInfo();
+                    workingInfo.EmployeeATID = existedEmployee.EmployeeATID;
+                    workingInfo.CompanyIndex = existedEmployee.CompanyIndex;
+                    workingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                    workingInfo.FromDate = DateTime.Now;
+                    workingInfo.IsManager = false;
+                    workingInfo.ApprovedDate = DateTime.Now;
+                    workingInfo.UpdatedUser = user.UserName;
+                    workingInfo.Status = (short)TransferStatus.Approve;
+                    context.IC_WorkingInfo.Add(workingInfo);
+                    //
+                    existedWorkingInfo.ToDate = DateTime.Now.AddDays(-1);
+                    existedWorkingInfo.ApprovedDate = DateTime.Now;
+                    existedWorkingInfo.UpdatedUser = user.UserName;
+                    existedWorkingInfo.UpdatedDate = DateTime.Now;
+                    context.IC_WorkingInfo.Update(existedWorkingInfo);
+                }
+
+                var existedUserMaster = listUserMasterDB.FirstOrDefault(e => e.EmployeeATID == item.EmployeeATID);
+                if (existedUserMaster == null)
+                {
+                    existedUserMaster = new IC_UserMaster();
+                    existedUserMaster.EmployeeATID = existedEmployee.EmployeeATID;
+                    existedUserMaster.CompanyIndex = existedEmployee.CompanyIndex;
+                    existedUserMaster.NameOnMachine = existedEmployee.NameOnMachine;
+                    existedUserMaster.CardNumber = existedEmployee.CardNumber;
+                    existedUserMaster.AuthenMode = AuthenMode.FullAccessRight.ToString();
+                    existedUserMaster.Privilege = GlobalParams.DevicePrivilege.SDKStandardRole;
+                    existedUserMaster.UpdatedDate = DateTime.Now;
+                    existedUserMaster.CreatedDate = DateTime.Now;
+                    existedUserMaster.UpdatedUser = user.UserName;
+                    context.IC_UserMaster.Add(existedUserMaster);
+=======
+                    var existedWorkingInfo = listWorkingInfoDB.FirstOrDefault(e => e.EmployeeATID == item.EmployeeATID);
+                    if (existedWorkingInfo == null)
+                    {
+                        existedWorkingInfo = new IC_WorkingInfo();
+                        existedWorkingInfo.EmployeeATID = existedEmployee.EmployeeATID;
+                        existedWorkingInfo.CompanyIndex = existedEmployee.CompanyIndex;
+                        existedWorkingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                        existedWorkingInfo.FromDate = DateTime.Now;
+                        existedWorkingInfo.IsManager = false;
+                        existedWorkingInfo.ApprovedDate = DateTime.Now;
+                        existedWorkingInfo.UpdatedUser = user.UserName;
+                        existedWorkingInfo.Status = (short)GlobalParams.TransferStatus.Approve;
+                        context.IC_WorkingInfo.Add(existedWorkingInfo);
+                    }
+                    else if (existedWorkingInfo.DepartmentIndex == 0 && existedWorkingInfo.DepartmentIndex != existedEmployee.DepartmentIndex && existedEmployee.DepartmentIndex != 0)
+                    {
+                        existedWorkingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                        existedWorkingInfo.IsSync = null;
+                        existedWorkingInfo.Status = (short)GlobalParams.TransferStatus.Approve;
+                        existedWorkingInfo.FromDate = DateTime.Now;
+                        existedWorkingInfo.ApprovedDate = DateTime.Now;
+                        existedWorkingInfo.UpdatedUser = user.UserName;
+                        existedWorkingInfo.UpdatedDate = DateTime.Now;
+                        context.IC_WorkingInfo.Update(existedWorkingInfo);
+                    }
+                    else if (existedWorkingInfo.DepartmentIndex > 0 && existedWorkingInfo.FromDate.Date < DateTime.Now.Date && existedWorkingInfo.DepartmentIndex != existedEmployee.DepartmentIndex && existedEmployee.DepartmentIndex != 0)
+                    {
+                        var workingInfo = new IC_WorkingInfo();
+                        workingInfo.EmployeeATID = existedEmployee.EmployeeATID;
+                        workingInfo.CompanyIndex = existedEmployee.CompanyIndex;
+                        workingInfo.DepartmentIndex = existedEmployee.DepartmentIndex;
+                        workingInfo.FromDate = DateTime.Now;
+                        workingInfo.IsManager = false;
+                        workingInfo.ApprovedDate = DateTime.Now;
+                        workingInfo.UpdatedUser = user.UserName;
+                        workingInfo.Status = (short)GlobalParams.TransferStatus.Approve;
+                        context.IC_WorkingInfo.Add(workingInfo);
+                        //
+                        existedWorkingInfo.ToDate = DateTime.Now.AddDays(-1);
+                        existedWorkingInfo.ApprovedDate = DateTime.Now;
+                        existedWorkingInfo.UpdatedUser = user.UserName;
+                        existedWorkingInfo.UpdatedDate = DateTime.Now;
+                        context.IC_WorkingInfo.Update(existedWorkingInfo);
+                    }
+
+                    var existedUserMaster = listUserMasterDB.FirstOrDefault(e => e.EmployeeATID == item.EmployeeATID);
+                    if (existedUserMaster == null)
+                    {
+                        existedUserMaster = new IC_UserMaster();
+                        existedUserMaster.EmployeeATID = existedEmployee.EmployeeATID;
+                        existedUserMaster.CompanyIndex = existedEmployee.CompanyIndex;
+                        existedUserMaster.NameOnMachine = existedEmployee.NameOnMachine;
+                        existedUserMaster.CardNumber = existedEmployee.CardNumber;
+                        existedUserMaster.AuthenMode = GlobalParams.AuthenMode.FullAccessRight.ToString();
+                        existedUserMaster.Privilege = GlobalParams.DevicePrivilege.SDKStandardRole;
+                        existedUserMaster.UpdatedDate = DateTime.Now;
+                        existedUserMaster.CreatedDate = DateTime.Now;
+                        existedUserMaster.UpdatedUser = user.UserName;
+                        context.IC_UserMaster.Add(existedUserMaster);
+                    }
+                    else
+                    {
+                        existedUserMaster.NameOnMachine = existedEmployee.NameOnMachine;
+                        existedUserMaster.CardNumber = existedEmployee.CardNumber;
+                        existedUserMaster.UpdatedDate = DateTime.Now;
+                        existedUserMaster.UpdatedUser = user.UserName;
+                        context.IC_UserMaster.Update(existedUserMaster);
+                    }
+>>>>>>> ver2
+                }
+                catch {
+                }
+            }
+            context.SaveChanges();
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_Employee";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Added;
+            audit.Description = AuditType.Added.ToString() +" Import From Excel "+ listEmployeeID.Count().ToString() + " Employee";
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+
+            result = Ok(message);
+            //if (string.IsNullOrWhiteSpace(message))
+            //{
+            //    result = Ok(message);
+            //}
+            //else
+            //{
+            //    result = Ok(new { Message = message, URL = URL });
+            //}
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("DeleteEmployeeFromExcel")]
+        [HttpPost]
+        public IActionResult DeleteEmployeeFromExcel([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            var paramEmployee = addedParams.FirstOrDefault(e => e.Key == "ListEmployeeATID");
+            var paramDeleteOndevice = addedParams.FirstOrDefault(e => e.Key == "IsDeleteOnDevice");
+            var lsemployeeATID = new List<string>();
+            var isDeleteOnDevice = false;
+            if (paramEmployee != null)
+            {
+                lsemployeeATID = JsonConvert.DeserializeObject<List<string>>(paramEmployee.Value.ToString());
+            }
+            else
+            {
+                return BadRequest("");
+            }
+            var listPadleft = new List<string>();
+            foreach (var item in lsemployeeATID)
+            {
+                listPadleft.Add(item.PadLeft(_config.MaxLenghtEmployeeATID, '0'));
+            }
+            var existedEmployee = context.IC_Employee.Where(e => e.CompanyIndex == user.CompanyIndex && listPadleft.Contains(e.EmployeeATID)).ToList();
+
+            if (paramDeleteOndevice != null)
+            {
+                isDeleteOnDevice = Convert.ToBoolean(paramDeleteOndevice.Value);
+                if (isDeleteOnDevice)
+                {
+                    var lsSerialHw = context.IC_Device.Where(e => e.CompanyIndex == user.CompanyIndex).Select(e => e.SerialNumber).ToList();
+                    
+                    if (existedEmployee != null)
+                    {
+                        listPadleft = existedEmployee.Select(e => e.EmployeeATID).ToList();
+
+                        IC_UserinfoOnMachineParam paramUserOnMachine = new IC_UserinfoOnMachineParam();
+                        paramUserOnMachine.ListEmployeeaATID = listPadleft;
+                        paramUserOnMachine.CompanyIndex = user.CompanyIndex;
+                        paramUserOnMachine.AuthenMode = "";
+                        paramUserOnMachine.FullInfo = false;
+                        List<UserInfoOnMachine> lstUser = _IIC_CommandLogic.GetListUserInfoOnMachine(paramUserOnMachine);
+
+                        IC_CommandParamDTO commandParam = new IC_CommandParamDTO();
+                        commandParam.IsOverwriteData = false;
+                        commandParam.Action = CommandAction.DeleteUserById;
+                        commandParam.AuthenMode = "";
+                        commandParam.FromTime = DateTime.Now;
+                        commandParam.ToTime = DateTime.Now;
+                        commandParam.ListEmployee = lstUser;
+                        commandParam.ListSerialNumber = lsSerialHw;
+                        commandParam.Privilege = GlobalParams.DevicePrivilege.SDKStandardRole;
+                        commandParam.ExternalData = "";
+                        List<CommandResult> lstCmd = _IIC_CommandLogic.CreateListCommands(commandParam);
+                        if (lstCmd != null && lstCmd.Count() > 0)
+                        {
+                            IC_GroupCommandParamDTO groupCommand = new IC_GroupCommandParamDTO();
+                            groupCommand.CompanyIndex = user.CompanyIndex;
+                            groupCommand.UserName = user.UserName;
+                            groupCommand.ListCommand = lstCmd;
+                            groupCommand.GroupName = CommandAction.DeleteUserById.ToString();
+                            groupCommand.EventType = "";
+                            _IIC_CommandLogic.CreateGroupCommands(groupCommand);
+                        }
+                    }
+                }
+            }
+
+            var listEmp = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && listPadleft.Contains(t.EmployeeATID)).ToArray();
+            var listWorkingInfo = context.IC_WorkingInfo.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+            var listWorkingTransfer = context.IC_EmployeeTransfer.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+            var listUserMaster = context.IC_UserMaster.Where(x => x.CompanyIndex == user.CompanyIndex && listPadleft.Contains(x.EmployeeATID)).ToArray();
+            try
+            {
+                context.IC_Employee.RemoveRange(listEmp);
+                context.IC_WorkingInfo.RemoveRange(listWorkingInfo);
+                context.IC_EmployeeTransfer.RemoveRange(listWorkingTransfer);
+                context.IC_UserMaster.RemoveRange(listUserMaster);
+                context.SaveChanges();
+                // Add audit log
+                IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+                audit.TableName = "IC_Employee";
+                audit.UserName = user.UserName;
+                audit.CompanyIndex = user.CompanyIndex;
+                audit.State = AuditType.Deleted;
+                audit.Description = AuditType.Deleted.ToString() + " From Excel " + listEmp.Count().ToString() + " Employee";
+                audit.DateTime = DateTime.Now;
+                _iIC_AuditLogic.Create(audit);
+                result = Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("ExportToExcel")]
+        [HttpPost]
+        public async Task<IActionResult> ExportToExcel([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                //return new byte[0];
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            ConfigObject config = ConfigObject.GetConfig(cache);
+
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+            addedParams.Add(new AddedParam { Key = "TransferStatus", Value = GlobalParams.TransferStatus.Approve });
+            addedParams.Add(new AddedParam { Key = "IsCurrentWorkingAndNoDepartment", Value = true });
+
+            if (config.IntegrateDBOther == false)
+            {
+<<<<<<< HEAD
+                List<IC_Employee> employees = null;
+                employees = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex).OrderBy(t => t.EmployeeATID).ToList();
+=======
+                List<IC_EmployeeDTO> employees = null;
+                //employees = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex).OrderBy(t => t.EmployeeATID).ToList();
+                employees = _IIC_EmployeeLogic.GetManyExport(addedParams);
+>>>>>>> ver2
+
+                var obj = employees.Select(e => new
+                {
+                    EmployeeATID = e.EmployeeATID.PadLeft(_config.MaxLenghtEmployeeATID, '0'),
+                    EmployeeCode = e.EmployeeCode,
+                    FullName = e.FullName,
+                    CardNumber = e.CardNumber,
+                    NameOnMachine = e.NameOnMachine,
+                    _Gender = e.Gender.HasValue ? e.Gender.Value == 1 ? "x" : "" : "",
+                    _DepartmentName = e.DepartmentName
+                }).ToList();
+
+                string sWebRootFolder = _hostingEnvironment.ContentRootPath;
+                string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, @"Files/Employee.xlsx");
+                FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, @"Files/Employee.xlsx"));
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("Employees");
+                    var currentRow = 1;
+                    worksheet.Cell(currentRow, 1).Value = "Mã chấm công (*)";
+                    worksheet.Cell(currentRow, 2).Value = "Mã nhân viên";
+                    worksheet.Cell(currentRow, 3).Value = "Họ tên";
+                    worksheet.Cell(currentRow, 4).Value = "Mã thẻ";
+                    worksheet.Cell(currentRow, 5).Value = "Tên trên máy";
+                    worksheet.Cell(currentRow, 6).Value = "Giới tính (Nam)";
+                    worksheet.Cell(currentRow, 7).Value = "Phòng ban";
+
+                    for (int i = 1; i < 8; i++)
+                    {
+                        worksheet.Cell(1, i).Style.Fill.BackgroundColor = XLColor.Yellow;
+                        worksheet.Cell(1, i).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Column(i).Width = 20;
+                    }
+
+                    foreach (var users in obj)
+                    {
+                        currentRow++;
+                        worksheet.Cell(currentRow, 1).Value = users.EmployeeATID;
+                        worksheet.Cell(currentRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(currentRow, 1).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeATID.Length, '0');
+
+                        worksheet.Cell(currentRow, 2).Value = users.EmployeeCode;
+                        worksheet.Cell(currentRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if(!string.IsNullOrWhiteSpace(users.EmployeeCode))
+                            worksheet.Cell(currentRow, 2).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeCode.Length, '0');
+
+                        worksheet.Cell(currentRow, 3).Value = users.FullName;
+                        worksheet.Cell(currentRow, 3).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 4).Value = users.CardNumber;
+                        worksheet.Cell(currentRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        if (!string.IsNullOrWhiteSpace(users.CardNumber))
+                            worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0".PadLeft(users.CardNumber.Length, '0');
+
+                        worksheet.Cell(currentRow, 5).Value = users.NameOnMachine;
+                        worksheet.Cell(currentRow, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 6).Value = users._Gender;
+                        worksheet.Cell(currentRow, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        worksheet.Cell(currentRow, 7).Value = users._DepartmentName;
+                        worksheet.Cell(currentRow, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+
+                    //var workbookBytes = new byte[0];
+                    //using (var ms = new MemoryStream())
+                    //{
+                    //    workbook.SaveAs(ms);
+                    //    return workbookBytes = ms.ToArray();
+                    //}
+                    workbook.SaveAs(file.FullName);
+                    return Ok(URL);
+                }
+            }
+            //return new byte[0];
+            return NotFound("TemplateError");
+        }
+
+
+        [Authorize]
+        [ActionName("GetEmployeeLookup")]
+        [HttpGet]
+        public IActionResult GetEmployeeLookup()
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            var rs = GetListEmployeeLookup(config, user, context, otherContext);
+            return Ok(rs);
+        }
+
+        [Authorize]
+        [ActionName("GetEmployeeFinger")]
+        [HttpGet]
+        public IActionResult GetEmployeeFinger(string employeeATID) {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null) {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<string> listUserMasterFinger = new List<string>();
+            var userMaster = _iC_UserMasterLogic.GetExist(employeeATID, user.CompanyIndex);
+            if (userMaster != null)
+            {
+                listUserMasterFinger.Add(userMaster.FingerData0);
+                listUserMasterFinger.Add(userMaster.FingerData1);
+                listUserMasterFinger.Add(userMaster.FingerData2);
+                listUserMasterFinger.Add(userMaster.FingerData3);
+                listUserMasterFinger.Add(userMaster.FingerData4);
+                listUserMasterFinger.Add(userMaster.FingerData5);
+                listUserMasterFinger.Add(userMaster.FingerData6);
+                listUserMasterFinger.Add(userMaster.FingerData7);
+                listUserMasterFinger.Add(userMaster.FingerData8);
+                listUserMasterFinger.Add(userMaster.FingerData9);
+            }
+            return Ok(listUserMasterFinger);
+
+        }
+
+        private void CheckCardNumberInUserInfo(string pEmployeeATID, string pCardNumber, string UserNameDevice, int pCompanyIndex, string username, string password)
+        {
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IC_UserInfo us = new IC_UserInfo();
+            try
+            {
+                List<IC_UserInfo> userInfo = context.IC_UserInfo.Where(t => t.EmployeeATID == pEmployeeATID && t.CompanyIndex == pCompanyIndex).ToList();
+                if (userInfo.Count == 0)
+                {
+                    us = new IC_UserInfo()
+                    {
+                        EmployeeATID = pEmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                        CompanyIndex = pCompanyIndex,
+                        SerialNumber = "",
+                        UserName = UserNameDevice,
+                        Password = password != null ? Misc.SHA1(password) : "",
+                        CardNumber = pCardNumber,
+                        Privilege = 0,
+                        Reserve1 = "",
+                        Reserve2 = 0,
+                        AuthenMode = AuthenMode.FullAccessRight.ToString(),
+                        UpdatedDate = DateTime.Now,
+                        CreatedDate = DateTime.Now,
+                        UpdatedUser = username
+                    };
+                    context.IC_UserInfo.Add(us);
+                }
+                else
+                {
+                    foreach (var item in userInfo)
+                    {
+                        item.UserName = UserNameDevice;
+                        item.CardNumber = pCardNumber;
+                        item.UpdatedDate = DateTime.Now;
+                        item.UpdatedUser = username;
+                        if(password != null)
+                        {
+                            item.Password = Misc.SHA1(password);
+                        }
+                        
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            //context.SaveChanges();
+        }
+
+        private void CheckCardNumberInUserInfoImport(List<IC_Employee> listEmp, int pCompanyIndex)
+        {
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            List<IC_UserInfo> listUserInfo = context.IC_UserInfo.Where(t => t.CompanyIndex == pCompanyIndex).ToList();
+            foreach (IC_Employee emp in listEmp)
+            {
+                IC_UserInfo userInfo = listUserInfo.Where(t => t.EmployeeATID == emp.EmployeeATID && t.SerialNumber == "").FirstOrDefault();
+                if (userInfo == null)
+                {
+                    userInfo = new IC_UserInfo()
+                    {
+                        EmployeeATID = emp.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0'),
+                        CompanyIndex = emp.CompanyIndex,
+                        SerialNumber = "",
+                        UserName = emp.NameOnMachine,
+                        Password = "",
+                        CardNumber = emp.CardNumber,
+                        Privilege = 0,
+                        Reserve1 = "",
+                        Reserve2 = 0,
+                        CreatedDate = DateTime.Now,
+                        UpdatedUser = emp.UpdatedUser,
+                        UpdatedDate = DateTime.Now
+                    };
+                    context.IC_UserInfo.Add(userInfo);
+                }
+                else
+                {
+                    userInfo.UserName = emp.NameOnMachine;
+                    userInfo.CardNumber = emp.CardNumber;
+                    userInfo.UpdatedDate = DateTime.Now;
+                    userInfo.UpdatedUser = emp.UpdatedUser;
+                }
+            }
+
+        }
+
+        internal static List<EmployeeLookup> GetListEmployeeLookup(ConfigObject pConfig, UserInfo pUser, EPAD_Context context, ezHR_Context otherContext)
+        {
+            var lstEmployeeLookup = new List<EmployeeLookup>();
+            if (pConfig.IntegrateDBOther)
+            {
+                var lastWorking = otherContext.HR_WorkingInfo.Where(x => x.CompanyIndex == pConfig.CompanyIndex && x.FromDate <= DateTime.Now && (!x.ToDate.HasValue || x.ToDate >= DateTime.Now));
+                lastWorking = lastWorking
+                .OrderByDescending(n => n.FromDate)
+                .GroupBy(n => n.EmployeeATID)
+                .Select(n => n.FirstOrDefault());
+
+                var output = from wi in lastWorking
+                             join hd in otherContext.HR_Department.Where(x => x.CompanyIndex == pConfig.CompanyIndex)
+                             on wi.DepartmentIndex equals hd.Index
+                             into hdc
+                             join he in otherContext.HR_Employee.Where(x => x.CompanyIndex == pConfig.CompanyIndex)
+                             on wi.EmployeeATID equals he.EmployeeATID
+                             into wic
+                             from hd in hdc.DefaultIfEmpty()
+                             from he in wic.DefaultIfEmpty()
+                             select new EmployeeLookup()
+                             {
+                                 EmployeeATID = wi.EmployeeATID,
+                                 DepartmentIndex = wi.DepartmentIndex,
+                                 FullName = $"{he.LastName} {he.MidName} {he.FirstName}",
+                                 Department = hd.Name
+                             };
+                lstEmployeeLookup = output.ToList();
+            }
+            else
+            {
+                var output = from e in context.IC_Employee.Where(x => x.CompanyIndex == pUser.CompanyIndex)
+                             join d in context.IC_Department.Where(x => x.CompanyIndex == pUser.CompanyIndex)
+                             on e.DepartmentIndex equals d.Index into deptGroup
+                             from dept in deptGroup.DefaultIfEmpty()
+                             select new EmployeeLookup()
+                             {
+                                 EmployeeATID = e.EmployeeATID,
+                                 FullName = e.FullName,
+                                 DepartmentIndex = e.DepartmentIndex,
+                                 Department = dept.Name
+                             };
+                lstEmployeeLookup = output.ToList();
+            }
+
+            return lstEmployeeLookup;
+        }
+    }
+
+    
+
+    public class EmployeParam
+    {
+        public string EmployeeATID { get; set; }
+        public string EmployeeCode { get; set; }
+        public string FullName { get; set; }
+        public string CardNumber { get; set; }
+        public short? Gender { get; set; }
+        public string NameOnMachine { get; set; }
+        public int DepartmentIndex { get; set; }
+        public string DepartmentCode { get; set; }
+
+        public DateTime JoinedDate { get; set; }
+        public string ImageUpload { get; set; }
+        public string Password { get; set; }
+        public string Biometrics { get; set; }
+        public List<string> ListFinger { get; set; }
+    }
+    public class EmployeeTree
+    {
+        public long? ID { get; set; }
+        public string IDLocal { get; set; }
+        public string EmployeeATID { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public int Level { get; set; }
+        public string Gender { get; set; }
+        public List<EmployeeTree> ListChildrent { get; set; }
+
+        public EmployeeTree()
+        {
+            ListChildrent = new List<EmployeeTree>();
+        }
+    }
+
+    public class EmployeeLookup
+    {
+        public string EmployeeATID { get; set; }
+        public string FullName { get; set; }
+        public long? DepartmentIndex { get; set; }
+        public string Department { get; set; }
+    }
+}
+

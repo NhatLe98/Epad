@@ -1,0 +1,22 @@
+- Ngày: 02-10-2023
+- Dev: Nguyễn Dương
+- Ticket: P2-6217
+- Key: DashboardModule
+- Path: variables/common-utils.json
+- Diễn giải: Dùng để cấu hình các phân hệ cho trang dashboard, ví dụ: 
+	"DashboardModule": "ePAD,eAC"
+Web sẽ hiển thị các chart thuộc phân hệ ePAD và eAC trong trang dashboard
+------------------------------------------------------------------------
+- Ngày: 03-07-2024
+- Dev: Nguyễn Dương
+- Key: UsingNewAttendanceMonitoring
+- Path: variables/common-utils.json
+- Diễn giải: Sử dụng layout màn hình mới cho màn hình "Nhân viên có mặt theo cổng"
+------------------------------------------------------------------------
+- Ngày: 03-07-2024
+- Dev: Nguyễn Dương
+- Key: ExcludeVehicleFactoryUserMonitoring
+- Path: variables/common-utils.json
+- Diễn giải: Hiển thị layout của màn hình "Tổng số người trong nhà máy" thành dạng 2 chart (chỉ hiện chart liên quan đến flow đi bộ)
+------------------------------------------------------------------------
+

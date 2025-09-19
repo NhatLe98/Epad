@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 1.1em;
+}
+th, td {
+  text-align: left;
+  padding: 10px;
+}
+tr:nth-child(even){background-color: #f2f2f2}
+th {
+  background-color: #4CAF50;
+  color: white;
+}
+.w-100 {width: 100%;}
+.w-50 {width: 50%;}
+.h-100 {height: 100%;}
+.fl {float: left;}
+.clear {clear: both;}
+.h2-clone {
+  height: 66px;
+  text-align: right;
+  font-style: italic;
+  line-height: 66px;
+  vertical-align: middle;
+}
+.mt-5 {margin-top: 5px;}
+</style>
+</head>
+<body>
+
+  <div style="width: 60%; margin: 0 auto;">
+    <div class="w-50 fl"><h2>{{TITLE}}</h2></div>
+    <div class="w-50 fl h2-clone">{{DATETIME}}</div>
+    <div class="clear"></div>
+    <div style="margin-bottom: 30px;">
+      <table>
+        <tr>
+          <th>THÔNG TIN</th>
+          <th>CHI TIẾT</th>
+        </tr>
+        <tr>
+          <td>Config</td>
+          <td>{{CONFIG}}</td>
+        </tr>
+        <tr>
+          <td>Số lệnh thành công</td>
+          <td style="color: blue;">{{SUCCESS}}</td>
+        </tr>
+        <tr>
+          <td>Số lệnh thất bại</td>
+          <td style="color: red;">{{FAIL}}</td>
+        </tr>
+        <tr>
+          <td>Thời gian hoàn tất thực hiện</td>
+          <td>{{EXCUTEDTIME}}</td>
+      </tr>
+      </table>
+    </div>
+    <div id="detail" style="display: none;">
+      <table id="tblDetailError">
+        <tr>
+          <th style="background-color: #dba2a8;">Chi tiết lỗi</th>
+        </tr>
+        {{BODY_ERROR}}
+      </table>
+    </div>
+    <hr class="mt-5">
+    <div>
+      <span>(Mail được gửi tự động, xin vui lòng không trả lời)</span>
+    </div>
+</div>
+</body>
+</html>

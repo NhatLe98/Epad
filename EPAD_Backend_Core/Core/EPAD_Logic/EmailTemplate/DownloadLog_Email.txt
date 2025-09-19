@@ -1,0 +1,11 @@
+﻿Chào <strong><fullname></strong>,
+Bạn đã được đăng ký sử dụng HRPro7App cùng với công ty <strong><companyname></strong>
+Tài khoản và mật khẩu sẽ được sử dụng chung cho tất cả công ty
+
+Bạn có thể tải ứng dụng tại 
+- [Link android]: <a href="https://play.google.com/store/apps/details?id=com.giaiphaptinhhoa.HRpro7App">Android</a>
+hoặc 
+- [Link iOS]: <a href="https://apps.apple.com/vn/app/id1487762992">IOS</a>
+
+Cám ơn bạn đã sử dụng ứng dụng.
+(Mail được gửi tự động, xin vui lòng không trả lời)

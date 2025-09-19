@@ -1,0 +1,747 @@
+[
+  {
+    "group_id": "9",
+    "group_key": "Dashboard",
+    "group_name": "Home",
+    "group_path": "dashboard",
+    "group_icon": "home.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "9-1",
+        "key": "Dashboard",
+        "name": "Dashboard",
+        "path": "dashboard",
+        "icon": "home.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "1",
+    "group_key": "Home",
+    "group_name": "Home",
+    "group_path": "home",
+    "group_icon": "home.png",
+    "group_show": true,
+    "list_menu": []
+  },
+  {
+    "group_id": "2",
+    "group_key": "DeviceManagement",
+    "group_name": "DeviceManagement",
+    "group_path": "",
+    "group_icon": "device.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "2-1",
+        "key": "Machine",
+        "name": "ListMachine",
+        "path": "machine",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-2",
+        "key": "MachineLicense",
+        "name": "MachineLicense",
+        "path": "machine-license",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-3",
+        "key": "DeviceInfo",
+        "name": "DeviceInfo",
+        "path": "device-info",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-4",
+        "key": "DevicesByDepartment",
+        "name": "DevicesByDepartment",
+        "path": "device-by-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-5",
+        "key": "LogMonitoring",
+        "name": "LogMonitoringOnline",
+        "path": "log-monitoring-online",
+        "icon": "device.png",
+        "show": true
+      },
+      {
+        "id": "2-6",
+        "key": "LogRealtimeMonitoring",
+        "name": "LogRealtimeMonitoringOnline",
+        "path": "log-realtime-monitoring-online",
+        "icon": "device.png",
+        "show": true
+      },
+      {
+        "id": "2-7",
+        "key": "TotalEmployeePresent",
+        "name": "TotalEmployeePresent",
+        "path": "total-employee-present",
+        "icon": "device.png",
+        "show": true
+      },
+      {
+        "id": "2-8",
+        "key": "Service",
+        "name": "ListService",
+        "path": "service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-9",
+        "key": "DevicesByService",
+        "name": "DevicesByService",
+        "path": "device-by-service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-10",
+        "key": "ViewLogAttend",
+        "name": "ViewLogAttend",
+        "path": "view-log-attend",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-11",
+        "key": "GroupDevice",
+        "name": "GroupDevice",
+        "path": "group-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-12",
+        "key": "ListGroupDevice",
+        "name": "ListGroupDevice",
+        "path": "list-group-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-13",
+        "key": "Controller",
+        "name": "Controller",
+        "path": "controller",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-14",
+        "key": "RelayController",
+        "name": "Relay Controller",
+        "path": "relay-controller",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-15",
+        "key": "CameraControl",
+        "name": "CameraControl",
+        "path": "camera-control",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "2-16",
+        "key": "PrinterControl",
+        "name": "PrinterControl",
+        "path": "printer-control",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "3",
+    "group_key": "UserManagement",
+    "group_name": "UserManagement",
+    "group_path": "user-management",
+    "group_icon": "employeemanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "3-1",
+        "key": "UserManagementCentralization",
+        "name": "UserManagementCentralization",
+        "path": "user-management-centralization",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-2",
+        "key": "ChangeDepartment",
+        "name": "ChangeDepartment",
+        "path": "change-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-3",
+        "key": "ApproveChangeDepartment",
+        "name": "ApproveChangeDepartment",
+        "path": "approve-change-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-4",
+        "key": "AutoSynchUser",
+        "name": "AutoSynchUser",
+        "path": "auto-sync-user",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "3-5",
+        "key": "Department",
+        "name": "Department",
+        "path": "department",
+        "icon": "department.png",
+        "show": true
+      },
+      {
+        "id": "3-6",
+        "key": "WorkingInfo",
+        "name": "WorkingInfo",
+        "path": "working-info",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-7",
+        "key": "ClassInfoManagement",
+        "name": "ClassInfoManagement",
+        "path": "class-info-management",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-8",
+        "key": "CardInfoManagement",
+        "name": "CardInfoManagement",
+        "path": "card-info-management",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-9",
+        "key": "PositionInfoManagement",
+        "name": "PositionInfoManagement",
+        "path": "position-info-management",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-10",
+        "key": "UserType",
+        "name": "UserType",
+        "path": "user-type",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-11",
+        "key": "Division",
+        "name": "Division",
+        "path": "division",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "3-12",
+        "key": "EmployeeType",
+        "name": "EmployeeType",
+        "path": "employee-type",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "7",
+    "group_key": "AccessControlManagement",
+    "group_name": "AccessControlManagement",
+    "group_path": "access-control-management",
+    "group_icon": "systemmanagement.png",
+    "group_show": true,
+    "list_menu": [
+    
+      {
+        "id": "7-2",
+        "key": "ACArea",
+        "name": "ACAreaManagement",
+        "path": "ac-area",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "7-3",
+        "key": "ACDoor",
+        "name": "ACDoor",
+        "path": "ac-door",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "7-4",
+        "key": "ACHoliday",
+        "name": "ACHoliday",
+        "path": "ac-holiday",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+     
+      {
+        "id": "7-6",
+        "key": "ACTimezone",
+        "name": "ACTimezoneManagement",
+        "path": "ac-timezone",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "7-7",
+        "key": "ACGroup",
+        "name": "ACGroupManagement",
+        "path": "ac-group",
+        "icon": "usermanagement.png",
+        "show": true
+      }
+    
+      
+    ]
+  },
+  {
+    "group_id": "8",
+    "group_key": "OperatingACSystem",
+    "group_name": "OperatingACSystem",
+    "group_path": "operating-ac-system",
+    "group_icon": "systemmanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "8-6",
+        "key": "ACAccessedGroup",
+        "name": "ACAccessedGroup",
+        "path": "ac-accessed-group",
+        "icon": "usermanagement.png",
+        "show": true
+
+      },
+      {
+        "id": "8-1",
+        "key": "ACSynchUser",
+        "name": "ACUserManagement",
+        "path": "ac-sync-user",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "8-2",
+        "key": "ACDoorManagement",
+        "name": "ACDoorManagement",
+        "path": "ac-door-management",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "8-3",
+        "key": "ACLogMonitoring",
+        "name": "ACLogMonitoring",
+        "path": "ac-log-monitoring",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "8-4",
+        "key": "ACLogHistory",
+        "name": "ACLogHistory",
+        "path": "ac-log-history",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+    
+      {
+        "id": "8-5",
+        "key": "ACUserMasterLog",
+        "name": "ACUserMasterLog",
+        "path": "ac-usermaster-log",
+        "icon": "usermanagement.png",
+        "show": true
+        
+      }
+      
+    ]
+  },
+  {
+    "group_id": "9",
+    "group_key": "GateManagement",
+    "group_name": "GateManagement",
+    "group_path": "gate-management",
+    "group_icon": "gate.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "9-1",
+        "key": "Declare",
+        "name": "Declare",
+        "path": "declare",
+        "icon": "usermanagement.png",
+        "show": true,
+        "list_menu": [
+          {
+            "id": "9-1-1",
+            "key": "AreaGroup",
+            "name": "AreaGroup",
+            "path": "area-group",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-1-2",
+            "key": "Gates",
+            "name": "Gates",
+            "path": "gates",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-1-4",
+            "key": "AccessedGroup",
+            "name": "AccessedGroup",
+            "path": "accessed-group",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-1-5",
+            "key": "EmployeeAccessedGroup",
+            "name": "EmployeeAccessedGroup",
+            "path": "employee-accessed-group",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-1-6",
+            "key": "DepartmentAccessedGroup",
+            "name": "DepartmentAccessedGroup",
+            "path": "department-accessed-group",
+            "icon": "usermanagement.png",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": "9-2",
+        "key": "Setup",
+        "name": "Setup",
+        "path": "setup",
+        "icon": "usermanagement.png",
+        "show": true,
+        "list_menu": [
+          {
+            "id": "9-2-1",
+            "key": "GeneralRules",
+            "name": "GeneralRules",
+            "path": "general-rules",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-2-2",
+            "key": "GeneralAccessRules",
+            "name": "GeneralAccessRules",
+            "path": "general-access-rules",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-2-3",
+            "key": "WarningRules",
+            "name": "WarningRules",
+            "path": "warning-rules",
+            "icon": "usermanagement.png",
+            "show": true
+          }
+        ]
+      },
+      {
+        "id": "9-3",
+        "key": "Operate",
+        "name": "Operate",
+        "path": "operate",
+        "icon": "usermanagement.png",
+        "show": true,
+        "list_menu": [
+          {
+            "id": "9-3-1",
+            "key": "GeneralMonitoringScreen",
+            "name": "GeneralMonitoringScreen",
+            "path": "general-monitoring-screen",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-3-2",
+            "key": "AttendanceMonitoring",
+            "name": "AttendanceMonitoring",
+            "path": "attendance-monitoring",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "9-3-3",
+            "key": "CustomerMonitoringPage",
+            "name": "CustomerMonitoringPage",
+            "path": "customer-monitoring-page",
+            "icon": "usermanagement.png",
+            "show": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "group_id": "10",
+    "group_key": "ParkingLotManagement",
+    "group_name": "ParkingLotManagement",
+    "group_path": "parking-lot-management",
+    "group_icon": "car.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "10-1",
+        "key": "Declare",
+        "name": "Declare",
+        "path": "declare",
+        "icon": "usermanagement.png",
+        "show": true,
+        "list_menu": [
+          {
+            "id": "10-1-1",
+            "key": "ParkingLot",
+            "name": "ParkingLot",
+            "path": "parking-lot",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "10-1-2",
+            "key": "EmployeeVehicle",
+            "name": "EmployeeVehicle",
+            "path": "employee-vehicle",
+            "icon": "usermanagement.png",
+            "show": true
+          },
+          {
+            "id": "10-1-3",
+            "key": "ParkingLotAccessed",
+            "name": "ParkingLotAccessed",
+            "path": "parking-lot-accessed",
+            "icon": "usermanagement.png",
+            "show": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "group_id": "11",
+    "group_key": "AreaLimitedControlManagement",
+    "group_name": "AreaLimitedControlManagement",
+    "group_path": "limited-area-management",
+    "group_icon": "usermanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "11-1",
+        "key": "Declare",
+        "name": "Declare",
+        "path": "declare",
+        "icon": "usermanagement.png",
+        "show": true,
+        "list_menu": [
+          {
+            "id": "11-1-1",
+            "key": "AreaLimited",
+            "name": "AreaLimited",
+            "path": "area-limited",
+            "icon": "usermanagement.png",
+            "show": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "group_id": "4",
+    "group_key": "AccountManagement",
+    "group_name": "AccountManagement",
+    "group_path": "account-management",
+    "group_icon": "usermanagement.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "4-1",
+        "key": "LoginAccount",
+        "name": "LoginAccount",
+        "path": "login-account",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "4-2",
+        "key": "GroupAccount",
+        "name": "GroupAccount",
+        "path": "group-account",
+        "icon": "usermanagement.png",
+        "show": true
+      },
+      {
+        "id": "4-3",
+        "key": "AssignPrivilegeUserGroup",
+        "name": "AssignPrivilegeUserGroup",
+        "path": "assign-privilege",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "4-4",
+        "key": "AssignPrivilegeDevice",
+        "name": "AssignPrivilegeDevice",
+        "path": "assign-privilege-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "4-5",
+        "key": "AssignPrivilegeDepartment",
+        "name": "AssignPrivilegeDepartment",
+        "path": "assign-privilege-department",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "4-6",
+        "key": "AssignPrivilegeMachineRealtime",
+        "name": "AssignPrivilegeMachineRealtime",
+        "path": "assign-privilege-machine-realtime",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "5",
+    "group_key": "SystemManagement",
+    "group_name": "SystemManagement",
+    "group_path": "system-management",
+    "group_icon": "settings.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "5-1",
+        "key": "SystemConfig",
+        "name": "Configuration",
+        "path": "system-config",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-2",
+        "key": "PersonalAccessToken",
+        "name": "PersonalAccessToken",
+        "path": "personal-access-token",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-3",
+        "key": "HistoryUser",
+        "name": "HistoryUser",
+        "path": "history-user",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-4",
+        "key": "SystemCommand",
+        "name": "SystemCommand",
+        "path": "system-command",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-5",
+        "key": "TrackingSystem",
+        "name": "TrackingSystems",
+        "path": "tracking-system",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-6",
+        "key": "ListService",
+        "name": "DownloadServiceSettingCollection",
+        "path": "list-service",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-7",
+        "key": "SystemConfigGroupDevice",
+        "name": "SystemConfigGroupDevice",
+        "path": "system-config-group-device",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-8",
+        "key": "TrackingIntegrate",
+        "name": "TrackingIntegrate",
+        "path": "tracking-integrate",
+        "icon": "settings.png",
+        "show": true
+      },
+      {
+        "id": "5-9",
+        "key": "DeviceHistory",
+        "name": "DeviceHistory",
+        "path": "device-history",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  },
+  {
+    "group_id": "6",
+    "group_key": "Reports",
+    "group_name": "Reports",
+    "group_path": "reports",
+    "group_icon": "report.png",
+    "group_show": true,
+    "list_menu": [
+      {
+        "id": "6-1",
+        "key": "Reports",
+        "name": "Reports",
+        "path": "reports",
+        "icon": "settings.png",
+        "show": true
+      }
+    ]
+  }
+]

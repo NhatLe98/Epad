@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "EPAD_Backend_Core.Grpc.Protos";
+
+message ParentInfoResult {
+	string EmployeeCode = 1;
+	string FullName = 2;
+	int16 Gender = 3;
+	int32 DayOfBirth = 4; 
+	int32 MonthOfBirth = 5;
+	int32 YearOfBirth = 6;
+	string NameOnMachine = 7;
+	int32 EmployeeType = 8;
+	Timespan CreatedDate = 9;
+	string CardNumber = 10;
+	string EmployeeATID = 11;
+	int32 CompanyIndex = 12;
+	ByteString Avatar = 13;
+	string Email = 14;
+	string Phone = 15;
+	string Students = 16;
+	Timespan UpdatedDate = 17;
+	string UpdatedUser = 18;
+}
+
+message ParentInfoResults {
+	repeated ParentInfoResult parentInfoResults = 1;
+}
+
+  

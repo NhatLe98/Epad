@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
+    <PackageReference Include="Google.Apis.Oauth2.v2" Version="1.68.0.1869" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.68.0.3484" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EPAD_Common\EPAD_Common.csproj" />
+    <ProjectReference Include="..\EPAD_Data\EPAD_Data.csproj" />
+    <ProjectReference Include="..\EPAD_Logic\EPAD_Logic.csproj" />
+    <ProjectReference Include="..\EPAD_Repository\EPAD_Repository.csproj" />
+  </ItemGroup>
+
+</Project>

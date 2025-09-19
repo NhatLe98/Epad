@@ -1,0 +1,1356 @@
+﻿using EPAD_Backend_Core.WebUtilitys;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.IO;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Hosting;
+using EPAD_Data;
+using EPAD_Data.Models;
+using EPAD_Logic;
+using EPAD_Common.Types;
+using EPAD_Common.Utility;
+using EPAD_Data.Entities;
+using EPAD_Common.Extensions;
+
+namespace EPAD_Backend_Core.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class EmployeeTransferController : ControllerBase
+    {
+        private EPAD_Context context;
+        private IMemoryCache cache;
+        private ConfigObject config;
+        private IIC_CommandLogic _iIC_CommandLogic;
+        private IIC_WorkingInfoLogic _iIC_WorkingInfoLogic;
+        private IIC_EmployeeTransferLogic _iIC_EmployeeTransferLogic;
+        private IIC_UserNotificationLogic _iIC_UserNotificationLogic;
+        private IIC_EmployeeLogic _IIC_EmployeeLogic;
+        private readonly IHostingEnvironment _hostingEnvironment;
+        private IIC_AuditLogic _iIC_AuditLogic;
+        public EmployeeTransferController(EPAD_Context pContext, IMemoryCache pCache,
+            ezHR_Context pOtherContext, IHostingEnvironment hostingEnvironment,
+            IIC_CommandLogic iIC_CommandLogic, IIC_WorkingInfoLogic iIC_WorkingInfoLogic,
+            IIC_EmployeeTransferLogic iIC_EmployeeTransferLogic,
+            IIC_UserNotificationLogic iIC_UserNotificationLogic,
+            IIC_EmployeeLogic iIC_EmployeeLogic, IIC_AuditLogic iC_AuditLogic
+            )
+        {
+            context = pContext;
+            cache = pCache;
+            config = ConfigObject.GetConfig(cache);
+            _iIC_CommandLogic = iIC_CommandLogic;
+            _iIC_WorkingInfoLogic = iIC_WorkingInfoLogic;
+            _iIC_EmployeeTransferLogic = iIC_EmployeeTransferLogic;
+            _iIC_UserNotificationLogic = iIC_UserNotificationLogic;
+            _IIC_EmployeeLogic = iIC_EmployeeLogic;
+            _hostingEnvironment = hostingEnvironment;
+            _iIC_AuditLogic = iC_AuditLogic;
+        }
+
+        [Authorize]
+        [ActionName("GetEmployeeTransferAtPage")]
+        [HttpGet]
+        public IActionResult GetEmployeeTransferAtPage(int page, string fromDate, string toDate, string filter, bool isPenddingApprove)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            DataGridClass dataGrid = null;
+            //DateTime _fromTime = DateTime.ParseExact(fromDate, "yyyy-MM-dd", null);
+            //DateTime _toTime = DateTime.ParseExact(toDate, "yyyy-MM-dd", null);
+            int countPage = 0;
+
+            List<IC_EmployeeTransferDTO> listResult = new List<IC_EmployeeTransferDTO>();
+
+            List<AddedParam> addedParams = new List<AddedParam>();
+            addedParams.Add(new AddedParam { Key = "Filter", Value = filter });
+            addedParams.Add(new AddedParam { Key = "PageIndex", Value = page });
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "FromDate", Value = fromDate });
+            addedParams.Add(new AddedParam { Key = "ToDate", Value = toDate });
+            addedParams.Add(new AddedParam { Key = "IsPenddingApprove", Value = isPenddingApprove });
+            addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+            var lsEmployeeTransfer = _iIC_EmployeeTransferLogic.GetPage(addedParams);
+
+            var lsWorkingInfo = _iIC_WorkingInfoLogic.GetPageEmpTransfer(addedParams);
+
+            #region oldCode
+
+            //var lsTimeParam = GetDates(_fromTime, _toTime);
+            //var obj = from empt in context.IC_EmployeeTransfer
+            //          join emp in context.IC_Employee
+            //           on empt.EmployeeATID equals emp.EmployeeATID
+            //          join dpOld in context.IC_Department
+            //             on empt.OldDepartment equals dpOld.Index
+            //          join dpNew in context.IC_Department
+            //             on empt.NewDepartment equals dpNew.Index
+            //          where (empt.CompanyIndex.Equals(user.CompanyIndex) && (_fromTime <= empt.ToTime && _toTime >= empt.FromTime)) &&
+            //              string.IsNullOrEmpty(filter) ? temp == "" :
+            //                                              ((empt.Description.Contains(filter)
+            //                                              || emp.FullName.Contains(filter)
+            //                                              || dpNew.Name.Contains(filter)
+            //                                              || dpOld.Name.Contains(filter))
+            //                                              || (empt.AddOnNewDepartment ? "Có" : "Không").Contains(filter)
+            //                                              || (empt.RemoveFromOldDepartment ? "Có" : "Không").Contains(filter))
+            //          select new IC_EmployeeTransferDTO
+            //          {
+            //              EmployeeATID = empt.EmployeeATID,
+            //              FullName = emp.FullName,
+            //              IsFromTime = empt.FromTime.ToString("dd/MM/yyyy"),
+            //              IsToTime = empt.ToTime.ToString("dd/MM/yyyy"),
+            //              FromTime = empt.FromTime,
+            //              ToTime = empt.ToTime,
+            //              Description = empt.Description,
+            //              NewDepartment = empt.NewDepartment,
+            //              NewDepartmentName = dpNew.Name,
+            //              OldDepartment = empt.OldDepartment,
+            //              OldDepartmentName = dpOld.Name,
+            //              RemoveFromOldDepartmentName = empt.RemoveFromOldDepartment == true ? "Có" : "Không",
+            //              RemoveFromOldDepartment = empt.RemoveFromOldDepartment,
+            //              AddOnNewDepartment = empt.AddOnNewDepartment,
+            //              AddOnNewDepartmentName = empt.AddOnNewDepartment == true ? "Có" : "Không",
+            //              TypeTemporaryTransfer = "Tạm thời",
+            //              TransferApprovedDate = empt.ApprovedDate.HasValue ? empt.ApprovedDate.Value.ToString("dd/MM/yyyy") : "",
+            //              TransferApprovedUser = empt.ApprovedUser,
+            //              Status = empt.Status,
+            //              TransferApproveStatus = empt.Status == 0 ? "Chờ duyệt" : empt.Status == 1 ? "Duyệt" : "Từ chối",
+            //              TemporaryTransfer = true
+            //          };
+
+            //// working info
+            //var workingInfo = from empw in context.IC_WorkingInfo
+            //                  join emp in context.IC_Employee
+            //                   on empw.EmployeeATID equals emp.EmployeeATID
+            //                  join dpm in context.IC_Department
+            //                    on empw.DepartmentIndex equals dpm.Index
+            //                  where ((empw.FromDate >= _fromTime && empw.FromDate <= _toTime)) &&
+            //                   string.IsNullOrEmpty(filter) ? tempw == "" :
+            //                                              (emp.FullName.Contains(filter)
+            //                                              || dpm.Name.Contains(filter))
+            //                  select new IC_EmployeeTransferDTO
+            //                  {
+            //                      EmployeeATID = empw.EmployeeATID,
+            //                      FullName = emp.FullName,
+            //                      IsFromTime = empw.FromDate.ToString("dd/MM/yyyy"),
+            //                      IsToTime = empw.ToDate.HasValue ? empw.ToDate.Value.ToString("dd/MM/yyyy") : "",
+            //                      FromTime = empw.FromDate,
+            //                      ToTime = empw.ToDate,
+            //                      Description = string.Empty,
+            //                      NewDepartment = empw.DepartmentIndex,
+            //                      NewDepartmentName = dpm.Name,
+            //                      OldDepartment = null,
+            //                      OldDepartmentName = string.Empty,
+            //                      RemoveFromOldDepartmentName = string.Empty,
+            //                      RemoveFromOldDepartment = null,
+            //                      AddOnNewDepartment = null,
+            //                      AddOnNewDepartmentName = null,
+            //                      TypeTemporaryTransfer = "Lâu dài",
+            //                      TransferApprovedDate = empw.ApprovedDate.HasValue ? empw.ApprovedDate.Value.ToString("dd/MM/yyyy") : "",
+            //                      TransferApprovedUser = empw.ApprovedUser,
+            //                      Status = empw.Status,
+            //                      TransferApproveStatus = empw.Status == 0 ? "Chờ duyệt" : empw.Status == 1 ? "Đã duyệt" : "Từ chối",
+            //                      TemporaryTransfer = false
+            //                  };
+
+            //if (temporaryStatus)
+            //{
+            //    obj = obj.Where(u => u.Status == 0);
+            //    workingInfo = workingInfo.Where(u => u.Status == 0);
+            //}
+            //else
+            //{
+            //    obj = obj.Where(u => u.Status > 0);
+            //    workingInfo = workingInfo.Where(u => u.Status > 0);
+            //}
+
+            //// filer user in list assigened department
+            //obj = obj.Where(u => user.ListDepartmentAssigned.Contains(u.OldDepartment.Value) == true);
+            //workingInfo = workingInfo.Where(u => user.ListDepartmentAssigned.Contains(u.NewDepartment) == true);
+
+
+            //// TODO implement join toble before  query to get exactly page index
+            //countPage = obj.Count() > workingInfo.Count() ? obj.Count() + (obj.Count() - workingInfo.Count()) : workingInfo.Count() + (workingInfo.Count() - obj.Count());
+            ////var lsEmployeeTransfer = obj.OrderBy(t => t.EmployeeATID).Skip((page - 1) * GlobalParams.ROWS_NUMBER_IN_PAGE).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+            //var lsWorkingInfo = workingInfo.OrderBy(t => t.EmployeeATID).Skip((page - 1) * GlobalParams.ROWS_NUMBER_IN_PAGE).Take(GlobalParams.ROWS_NUMBER_IN_PAGE).ToList();
+            //lsEmployeeTransfer.AddRange(lsWorkingInfo);
+            #endregion
+            listResult.AddRange(lsEmployeeTransfer.Data);
+            listResult.AddRange(lsWorkingInfo.Data);
+            countPage = lsEmployeeTransfer.TotalCount > lsWorkingInfo.TotalCount ? lsEmployeeTransfer.TotalCount + (lsEmployeeTransfer.TotalCount - lsWorkingInfo.TotalCount) : lsWorkingInfo.TotalCount + (lsWorkingInfo.TotalCount - lsEmployeeTransfer.TotalCount);
+            dataGrid = new DataGridClass(countPage, listResult);
+            result = Ok(dataGrid);
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("ExportEmployeeTransfer")]
+        [HttpPost]
+        public IActionResult ExportEmployeeTransfer([FromBody] List<AddedParam> addedParams)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                //return new byte[0];
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            DataGridClass dataGrid = null;
+            int countPage = 0;
+
+            List<IC_EmployeeTransferDTO> listResult = new List<IC_EmployeeTransferDTO>();
+
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+            var lsEmployeeTransfer = _iIC_EmployeeTransferLogic.GetMany(addedParams);
+            var lsWorkingInfo = _iIC_WorkingInfoLogic.GetManyEmpTransfer(addedParams);
+            listResult.AddRange(lsEmployeeTransfer);
+            listResult.AddRange(lsWorkingInfo);
+
+            string sWebRootFolder = _hostingEnvironment.ContentRootPath;
+            string URL = string.Format("{0}://{1}/{2}", Request.Scheme, Request.Host, @"Files/EmployeeTransfer.xlsx");
+            FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, @"Files/EmployeeTransfer.xlsx"));
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Employees");
+                var currentRow = 1;
+                worksheet.Cell(currentRow, 1).Value = "Mã chấm công (*)";
+                worksheet.Cell(currentRow, 2).Value = "Họ tên";
+                worksheet.Cell(currentRow, 3).Value = "Ngày chuyển đi";
+                worksheet.Cell(currentRow, 4).Value = "Ngày trở lại";
+                worksheet.Cell(currentRow, 5).Value = "Phòng ban mới";
+                worksheet.Cell(currentRow, 6).Value = "Loại điều chuyển";
+                worksheet.Cell(currentRow, 7).Value = "Ngày duyệt";
+                worksheet.Cell(currentRow, 8).Value = "Người duyệt";
+                worksheet.Cell(currentRow, 9).Value = "Trạng thái";
+                worksheet.Cell(currentRow, 10).Value = "Diễn giải";
+
+                for (int i = 1; i < 11; i++)
+                {
+                    worksheet.Cell(1, i).Style.Fill.BackgroundColor = XLColor.Yellow;
+                    worksheet.Cell(1, i).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    worksheet.Column(i).Width = 20;
+                }
+
+                foreach (var users in listResult)
+                {
+                    currentRow++;
+
+                    worksheet.Cell(currentRow, 1).Value = users.EmployeeATID;
+                    worksheet.Cell(currentRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    worksheet.Cell(currentRow, 1).Style.NumberFormat.Format = "0".PadLeft(users.EmployeeATID.Length, '0');
+
+                    worksheet.Cell(currentRow, 2).Value = users.FullName;
+                    worksheet.Cell(currentRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 3).Value = users.FromTime;
+                    worksheet.Cell(currentRow, 3).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 4).Value = users.ToTime;
+                    worksheet.Cell(currentRow, 4).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 5).Value = users.NewDepartmentName;
+                    worksheet.Cell(currentRow, 5).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 6).Value = users.TypeTemporaryTransfer;
+                    worksheet.Cell(currentRow, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 7).Value = users.TransferApprovedDate;
+                    worksheet.Cell(currentRow, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 8).Value = users.TransferApprovedUser;
+                    worksheet.Cell(currentRow, 8).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 9).Value = users.TransferApproveStatus;
+                    worksheet.Cell(currentRow, 9).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    worksheet.Cell(currentRow, 10).Value = users.Description;
+                    worksheet.Cell(currentRow, 10).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                }
+                try
+                {
+                    //var workbookBytes = new byte[0];
+                    //using (var ms = new MemoryStream())
+                    //{
+                    //    workbook.SaveAs(ms);
+                    //    return workbookBytes = ms.ToArray();
+                    //}
+                    workbook.SaveAs(file.FullName);
+                    return Ok(URL);
+                }
+                catch (Exception ex)
+                {
+                    return NotFound("TemplateError");
+                }
+            }
+        }
+
+
+        [Authorize]
+        [ActionName("AddEmployeeTransfer")]
+        [HttpPost]
+        public IActionResult AddEmployeeTransfer([FromBody] EmployeeTransferParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            List<AddedParam> addedParams = new List<AddedParam>();
+
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (EmployeeTransferParam)Misc.RemoveWhiteSpace(param);
+            if (param.EmployeeATID == "")
+            {
+                return BadRequest("PleaseFillAllRequiredFields");
+            }
+
+
+            if (param.TemporaryTransfer)
+            {
+                var checkDataTime = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+               && t.EmployeeATID == param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0') &&
+              param.FromTime <= t.ToTime && param.ToTime >= t.FromTime).ToList();
+
+                if (checkDataTime != null && checkDataTime.Count > 0)
+                {
+                    return BadRequest("TimeExists");
+                }
+<<<<<<< HEAD
+                //Models.IC_EmployeeTransfer checkData = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+                //&& t.EmployeeATID == param.EmployeeATID &&
+                //t.FromTime <= param.FromTime && t.ToTime >= param.ToTime).FirstOrDefault();
+                //if (checkData != null)
+                //{
+                //    return Conflict("EmployeeTransferIsExist");
+                //}
+                IC_Employee employee = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID).FirstOrDefault();
+=======
+
+                var workingInfo = context.IC_WorkingInfo.FirstOrDefault(u => u.CompanyIndex == user.CompanyIndex 
+                             && u.EmployeeATID == param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0')
+                             && u.Status == (short)GlobalParams.TransferStatus.Approve
+                             && (u.ToDate == null && DateTime.Now.Date >= u.FromDate.Date )
+                                 || (u.ToDate != null && DateTime.Now.Date >= u.FromDate.Date && DateTime.Now.Date <= u.ToDate.Value.Date));
+>>>>>>> ver2
+
+                IC_EmployeeTransfer empTranfer = new IC_EmployeeTransfer();
+                empTranfer.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0');
+                empTranfer.CompanyIndex = user.CompanyIndex;
+                empTranfer.ToTime = param.ToTime.Value;
+                empTranfer.FromTime = param.FromTime;
+                empTranfer.IsSync = false;
+                empTranfer.Description = param.Description;
+                empTranfer.CreatedDate = DateTime.Today;
+                empTranfer.UpdatedDate = DateTime.Today;
+                empTranfer.UpdatedUser = user.UserName;
+                empTranfer.NewDepartment = param.NewDepartment;
+                empTranfer.OldDepartment = workingInfo == null? 0 : workingInfo.DepartmentIndex;
+                empTranfer.AddOnNewDepartment = param.AddOnNewDepartment;
+                empTranfer.RemoveFromOldDepartment = param.RemoveFromOldDepartment;
+                context.IC_EmployeeTransfer.Add(empTranfer);
+
+            }
+            else
+            {
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "EmployeeATID", Value = param.EmployeeATID });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "CheckExistFromDate", Value = param.FromTime });
+                List<IC_WorkingInfoDTO> checkData = _iIC_WorkingInfoLogic.GetMany(addedParams).ToList();
+                if (checkData != null && checkData.Count() > 0)
+                {
+                    var haveDepartment = checkData.FirstOrDefault(u => u.DepartmentIndex > 0);
+                    if (haveDepartment != null)
+                    {
+                        return BadRequest("WorkingInfoIsExists");
+                    }
+                }
+
+                var noDeartment = checkData.FirstOrDefault(u => u.DepartmentIndex  == 0);
+                if (noDeartment != null)
+                {
+                    IC_WorkingInfo updateInfo = new IC_WorkingInfo();
+                    updateInfo.Index = noDeartment.Index;
+                    updateInfo.EmployeeATID = noDeartment.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0');
+                    updateInfo.CompanyIndex = noDeartment.CompanyIndex; 
+                    updateInfo.IsManager = noDeartment.IsManager;
+                    updateInfo.UpdatedUser = user.UserName;
+                    updateInfo.DepartmentIndex = param.NewDepartment;
+                    updateInfo.Status = (short)TransferStatus.Pendding;
+                    updateInfo.FromDate = DateTime.Today;
+                    updateInfo.UpdatedDate = DateTime.Today;
+                    context.IC_WorkingInfo.Update(updateInfo);
+                }
+                else {
+                    IC_WorkingInfo workingInfo = new IC_WorkingInfo();
+                    workingInfo.CompanyIndex = user.CompanyIndex;
+                    workingInfo.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                    workingInfo.DepartmentIndex = param.NewDepartment;
+                    workingInfo.FromDate = param.FromTime;
+                    workingInfo.UpdatedDate = DateTime.Today;
+                    workingInfo.UpdatedUser = user.UserName;
+                    context.IC_WorkingInfo.Add(workingInfo);
+                }
+            }
+
+           
+            // Add Notify 
+            List<IC_UserNotificationDTO> listUserNotify = new List<IC_UserNotificationDTO>();
+
+            addedParams = new List<AddedParam>();
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "DepartmentIndex", Value = param.NewDepartment });
+            listUserNotify = _iIC_UserNotificationLogic.GetListUserNotify(addedParams);
+            if (listUserNotify.Count() > 0)
+            {
+                foreach (var item in listUserNotify)
+                {
+                    item.Status = 0;
+                    item.Type = 0; // 0 is submit employee transfer
+                    item.Message = JsonConvert.SerializeObject(new MessageBodyDTO
+                    {
+                        Message = "1",
+                        FromDate = param.FromTime,
+                        ToDate = param.ToTime,
+                        FromUser = user.FullName,
+                    });
+                }
+                _iIC_UserNotificationLogic.CreateList(listUserNotify);
+            }
+            context.SaveChanges();
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_EmployeeTransfer";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Added;
+            audit.Description = AuditType.Added.ToString() + " Transfer Employee " + param.EmployeeATID;
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+
+
+            result = Ok();
+            return result;
+        }
+        [Authorize]
+        [ActionName("AddEmployeesTransfer")]
+        [HttpPost]
+        public IActionResult AddEmployeesTransfer([FromBody] EmployeesTransferParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            List<AddedParam> addedParams = new List<AddedParam>();
+
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (EmployeesTransferParam)Misc.RemoveWhiteSpace(param);
+            if (param.EmployeeATID == "")
+            {
+                return BadRequest("PleaseFillAllRequiredFields");
+            }
+
+            List<IC_WorkingInfoDTO> checkData = new List<IC_WorkingInfoDTO>();
+            // Check thời gian khi nhân viên điều chuyển phòng ban
+            if (param.TemporaryTransfer)
+            {
+                var checkDataTime = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+                           && param.ArrEmployeeATID.Contains(t.EmployeeATID) &&
+                          param.FromTime <= t.ToTime && param.ToTime >= t.FromTime).ToList();
+                if (checkDataTime != null && checkDataTime.Count > 0)
+                {
+                    return Conflict("EmployeeTransferIsExist");
+                }
+            }
+            else
+            {
+
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "ListEmployeeATID", Value = param.ArrEmployeeATID });
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "CheckExistFromDate", Value = param.FromTime });
+                 checkData = _iIC_WorkingInfoLogic.GetMany(addedParams).ToList();
+                if (checkData != null && checkData.Count() > 0)
+                {
+                    var haveDepartment = checkData.FirstOrDefault(u => u.DepartmentIndex > 0);
+                    if (haveDepartment != null)
+                    {
+                        return BadRequest("WorkingInfoIsExists");
+                    }
+                }
+
+            }
+
+            var listWorkingInfo = context.IC_WorkingInfo.Where(u => u.CompanyIndex == user.CompanyIndex
+                            && param.ArrEmployeeATID.Contains( u.EmployeeATID )
+                            && u.Status == (short)GlobalParams.TransferStatus.Approve
+                            && (u.ToDate == null && DateTime.Now.Date >= u.FromDate.Date)
+                                || (u.ToDate != null && DateTime.Now.Date >= u.FromDate.Date && DateTime.Now.Date <= u.ToDate.Value.Date)).ToList();
+
+            for (int i = 0; i < param.ArrEmployeeATID.Count; i++)
+            {
+                if (param.TemporaryTransfer)
+                {
+<<<<<<< HEAD
+
+                    IC_Employee employee = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.ArrEmployeeATID[i]).FirstOrDefault();
+=======
+                    var workingInfo = listWorkingInfo.FirstOrDefault(e => e.EmployeeATID == param.ArrEmployeeATID[i]);
+>>>>>>> ver2
+
+                    IC_EmployeeTransfer empTranfer = new IC_EmployeeTransfer();
+                    empTranfer.EmployeeATID = param.ArrEmployeeATID[i].PadLeft(config.MaxLenghtEmployeeATID, '0');
+                    empTranfer.CompanyIndex = user.CompanyIndex;
+                    empTranfer.ToTime = param.ToTime.Value;
+                    empTranfer.FromTime = param.FromTime;
+                    empTranfer.IsSync = false;
+                    empTranfer.Description = param.Description;
+                    empTranfer.CreatedDate = DateTime.Now;
+                    empTranfer.UpdatedDate = DateTime.Now;
+                    empTranfer.UpdatedUser = user.UserName;
+                    empTranfer.NewDepartment = param.NewDepartment;
+                    empTranfer.OldDepartment = workingInfo == null ? 0 : workingInfo.DepartmentIndex;
+                    empTranfer.AddOnNewDepartment = param.AddOnNewDepartment;
+                    empTranfer.RemoveFromOldDepartment = param.RemoveFromOldDepartment;
+                    context.IC_EmployeeTransfer.Add(empTranfer);
+
+
+                }
+                else
+                {
+                    var noDeartment = checkData.FirstOrDefault(u => u.DepartmentIndex == 0);
+                    if (noDeartment != null)
+                    {
+                        IC_WorkingInfo updateInfo = new IC_WorkingInfo();
+                        updateInfo.Index = noDeartment.Index;
+                        updateInfo.EmployeeATID = noDeartment.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                        updateInfo.CompanyIndex = noDeartment.CompanyIndex;
+                        updateInfo.IsManager = noDeartment.IsManager;
+                        updateInfo.UpdatedUser = user.UserName;
+                        updateInfo.DepartmentIndex = param.NewDepartment;
+                        updateInfo.Status = (short)TransferStatus.Pendding;
+                        updateInfo.FromDate = DateTime.Now;
+                        updateInfo.UpdatedDate = DateTime.Now;
+                        context.IC_WorkingInfo.Update(updateInfo);
+                    }
+                    else
+                    {
+                        IC_WorkingInfo workingInfo = new IC_WorkingInfo();
+                        workingInfo.CompanyIndex = user.CompanyIndex;
+                        workingInfo.EmployeeATID = param.ArrEmployeeATID[i].PadLeft(config.MaxLenghtEmployeeATID, '0');
+                        workingInfo.DepartmentIndex = param.NewDepartment;
+                        workingInfo.FromDate = param.FromTime;
+                        workingInfo.UpdatedDate = DateTime.Now;
+                        workingInfo.UpdatedUser = user.UserName;
+                        context.IC_WorkingInfo.Add(workingInfo);
+                    }
+
+                }
+            }
+
+            // Add Notify 
+            List<IC_UserNotificationDTO> listUserNotify = new List<IC_UserNotificationDTO>();
+
+            addedParams = new List<AddedParam>();
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "DepartmentIndex", Value = param.NewDepartment });
+            listUserNotify = _iIC_UserNotificationLogic.GetListUserNotify(addedParams);
+
+            foreach (var item in listUserNotify)
+            {
+                item.Status = 0;
+                item.Type = 0; //  0 is submit emaployee transfer
+                item.Message = JsonConvert.SerializeObject(new MessageBodyDTO { Message = param.ArrEmployeeATID.Count().ToString(), FromDate = param.FromTime, ToDate = param.ToTime, FromUser = user.FullName });
+            }
+            _iIC_UserNotificationLogic.CreateList(listUserNotify);
+
+            context.SaveChanges();
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_EmployeeTransfer";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Added;
+            audit.Description = AuditType.Added.ToString() + " Transfer " + param.ArrEmployeeATID.Count().ToString() + " Employee";
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("GetWaitingApproveList")]
+        [HttpGet]
+        public IActionResult GetWaitingApproveList()
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<AddedParam> addedParams = new List<AddedParam>();
+            addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+            addedParams.Add(new AddedParam { Key = "ListDepartment", Value = user.ListDepartmentAssigned });
+            var listEmployee = _IIC_EmployeeLogic.GetMany(addedParams);
+            var empLookup = listEmployee.ToDictionarySafe(x => x.EmployeeATID);
+
+            List<WaitingApproveResult> listData = new List<WaitingApproveResult>();
+
+            List<IC_Department> listDepartment = context.IC_Department.Where(t => t.CompanyIndex == user.CompanyIndex).ToList();
+
+            List<IC_EmployeeTransfer> listEmpTransfer = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex && t.Status == 0)
+                .AsEnumerable().Where(x => empLookup.ContainsKey(x.EmployeeATID)).ToList();
+
+            for (int i = 0; i < listEmpTransfer.Count; i++)
+            {
+                IC_EmployeeDTO emp = listEmployee.Where(t => t.EmployeeATID == listEmpTransfer[i].EmployeeATID).FirstOrDefault();
+                IC_Department dep = listDepartment.Where(t => t.Index == listEmpTransfer[i].NewDepartment).FirstOrDefault();
+                if (emp != null)
+                {
+                    WaitingApproveResult data = new WaitingApproveResult();
+                    data.Index = 0;
+                    data.EmployeeATID = listEmpTransfer[i].EmployeeATID;
+                    data.CompanyIndex = listEmpTransfer[i].CompanyIndex;
+                    data.FromDate = listEmpTransfer[i].FromTime;
+                    data.NewDepartmentIndex = listEmpTransfer[i].NewDepartment;
+                    data.Type = 1;
+
+                    data.EmployeeName = emp.FullName;
+                    data.NewDepartment = dep == null ? "" : dep.Name;
+                    data.OldDepartment = emp.DepartmentName;
+                    data.ToDate = listEmpTransfer[i].ToTime;
+                    data.SuggestUser = listEmpTransfer[i].UpdatedUser;
+                    data.SuggestDate = listEmpTransfer[i].UpdatedDate;
+
+                    listData.Add(data);
+                }
+            }
+
+            //List<Models.IC_WorkingInfo> listWorkingInfo = context.IC_WorkingInfo.Where(t => t.CompanyIndex == user.CompanyIndex && listEmp.Contains(t.EmployeeATID) && t.Status == 0).ToList();
+            var listWorkingInfo = listEmployee.Where(u => u.TransferStatus == (short)TransferStatus.Pendding).ToList();
+            for (int i = 0; i < listWorkingInfo.Count; i++)
+            {
+                IC_EmployeeDTO emp = listEmployee.Where(t => t.EmployeeATID == listWorkingInfo[i].EmployeeATID).FirstOrDefault();
+                IC_Department dep = listDepartment.Where(t => t.Index == listWorkingInfo[i].DepartmentIndex).FirstOrDefault();
+
+                WaitingApproveResult data = new WaitingApproveResult();
+                data.Index = (int)listWorkingInfo[i].WorkingInfoIndex;
+                data.EmployeeATID = listWorkingInfo[i].EmployeeATID;
+                data.CompanyIndex = listWorkingInfo[i].CompanyIndex;
+                data.FromDate = listWorkingInfo[i].FromDate.Value;
+                data.NewDepartmentIndex = (int)listWorkingInfo[i].DepartmentIndex;
+                data.Type = 2;
+
+                data.EmployeeName = emp.FullName;
+                data.NewDepartment = dep == null ? "" : dep.Name;
+                data.OldDepartment = emp.DepartmentName;
+                data.ToDate = listWorkingInfo[i].ToDate;
+                data.SuggestUser = listWorkingInfo[i].UpdatedUser;
+                data.SuggestDate = listWorkingInfo[i].UpdatedDate;
+
+                listData.Add(data);
+            }
+
+            return Ok(listData);
+        }
+        [Authorize]
+        [ActionName("DeleteApproveEvent")]
+        [HttpPost]
+        public IActionResult DeleteApproveEvent([FromBody] List<WaitingApproveResult> listParam)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            List<IC_WorkingInfo> listWorkingInfo = context.IC_WorkingInfo.Where(t => t.CompanyIndex == user.CompanyIndex && t.Status == 0).ToList();
+            List<IC_EmployeeTransfer> listEmpTransfer = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex && t.Status == 0).ToList();
+            try
+            {
+                for (int i = 0; i < listParam.Count; i++)
+                {
+                    // delete workinginfo
+                    if (listParam[i].Index > 0)
+                    {
+                        IC_WorkingInfo workingInfo = listWorkingInfo.Where(t => t.Index == listParam[i].Index).FirstOrDefault();
+                        if (workingInfo != null)
+                        {
+                            workingInfo.Status = 2;
+
+                        }
+                    }
+                    else
+                    {
+                        IC_EmployeeTransfer empTrasnfer = listEmpTransfer.Where(t => t.EmployeeATID == listParam[i].EmployeeATID && t.FromTime.Date == listParam[i].FromDate.Date
+                            && t.NewDepartment == listParam[i].NewDepartmentIndex).FirstOrDefault();
+                        if (empTrasnfer != null)
+                        {
+                            empTrasnfer.Status = 2;
+
+                        }
+
+                    }
+                }
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            return Ok();
+        }
+
+        [Authorize]
+        [ActionName("DeleteEmployeeTransfer")]
+        [HttpPost]
+        public IActionResult DeleteEmployeeTransfer([FromBody] EmployeeTransferParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            IC_EmployeeTransfer deleteData = context.IC_EmployeeTransfer
+              .Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID
+              && t.FromTime == param.FromTime && t.NewDepartment == param.NewDepartment).FirstOrDefault();
+            if (deleteData.IsSync)
+            {
+                return BadRequest("IsSynced");
+            }
+            context.IC_EmployeeTransfer.Remove(deleteData);
+
+            context.SaveChanges();
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_EmployeeTransfer";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Deleted;
+            audit.Description = AuditType.Deleted.ToString() + " Transfer Employee " + param.EmployeeATID.ToString();
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateEmployeeTransfer")]
+        [HttpPost]
+        public IActionResult UpdateEmployeeTransfer([FromBody] EmployeeTransferParam param)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            param = (EmployeeTransferParam)Misc.RemoveWhiteSpace(param);
+
+            IC_EmployeeTransfer updateData = context.IC_EmployeeTransfer
+                .Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID
+                && t.FromTime == param.FromTime && t.NewDepartment == param.NewDepartment).FirstOrDefault();
+
+            if (updateData != null)
+            {
+                if (updateData.IsSync)
+                {
+                    return BadRequest("IsSynced");
+                }
+                updateData.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                updateData.CompanyIndex = user.CompanyIndex;
+                updateData.ToTime = param.ToTime.Value;
+                updateData.FromTime = param.FromTime;
+                updateData.IsSync = false;
+                updateData.Description = param.Description;
+                updateData.CreatedDate = DateTime.Now;
+                updateData.UpdatedDate = DateTime.Now;
+                updateData.UpdatedUser = user.UserName;
+                updateData.NewDepartment = param.NewDepartment;
+                updateData.AddOnNewDepartment = param.AddOnNewDepartment;
+                updateData.RemoveFromOldDepartment = param.RemoveFromOldDepartment;
+
+                context.SaveChanges();
+
+                // Add audit log
+                IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+                audit.TableName = "IC_EmployeeTransfer";
+                audit.UserName = user.UserName;
+                audit.CompanyIndex = user.CompanyIndex;
+                audit.State = AuditType.Modified;
+                audit.Description = AuditType.Modified.ToString() + " Transfer Employee " + param.EmployeeATID.ToString();
+                audit.DateTime = DateTime.Now;
+                _iIC_AuditLogic.Create(audit);
+            }
+
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("ApproveOrRejectEmployeeTransfer")]
+        [HttpPost]
+        public IActionResult ApproveOrRejectEmployeeTransfer([FromBody] List<IC_EmployeeTransferDTO> lsparam)
+        {
+            // Note: Please follow step by step at below command code to understand logic need to do
+
+            List<AddedParam> addedParams = new List<AddedParam>();
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            if (lsparam.FirstOrDefault(u => u.EmployeeATID == "") != null)
+            {
+                return BadRequest("PleaseFillAllRequiredFields");
+            }
+
+            // 1. Update Employee Transfer or  working info
+            foreach (var item in lsparam)
+            {
+                item.CompanyIndex = user.CompanyIndex;
+                var param = (IC_EmployeeTransferDTO)Misc.RemoveWhiteSpace(item);
+
+                if (param.TemporaryTransfer)
+                {
+                    var employeeTransfer = context.IC_EmployeeTransfer.Where(t => t.FromTime == param.FromTime && t.ToTime == param.ToTime && t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID && t.Status == (short)TransferStatus.Pendding).FirstOrDefault();
+                    if (employeeTransfer != null)
+                    {
+
+                        employeeTransfer.Status = param.Status;
+                        employeeTransfer.ApprovedDate = DateTime.Now;
+                        employeeTransfer.ApprovedUser = user.UserName;
+                        context.IC_EmployeeTransfer.Update(employeeTransfer);
+                    }
+                }
+                else
+                {
+
+                    var currentApproveItem = context.IC_WorkingInfo.FirstOrDefault(u => u.Index == param.WorkingInfoIndex && u.CompanyIndex == user.CompanyIndex && u.EmployeeATID == param.EmployeeATID && u.Status == (short)TransferStatus.Pendding);
+                    if (currentApproveItem != null)
+                    {
+                        currentApproveItem.Status = param.Status;
+                        currentApproveItem.ApprovedDate = DateTime.Now;
+                        currentApproveItem.ApprovedUser = user.UserName;
+                        context.IC_WorkingInfo.Update(currentApproveItem);
+                    }
+
+<<<<<<< HEAD
+                    if (param.Status == (short)TransferStatus.Reject) {
+                        List<IC_WorkingInfo> listWorkingInfo = context.IC_WorkingInfo.Where(u => u.Index == param.WorkingInfoIndex && u.CompanyIndex == user.CompanyIndex && u.EmployeeATID == param.EmployeeATID).ToList();
+=======
+                    if (param.Status == (short)GlobalParams.TransferStatus.Reject) {
+                        List<IC_WorkingInfo> listWorkingInfo = context.IC_WorkingInfo.Where(u => u.CompanyIndex == user.CompanyIndex && u.EmployeeATID == param.EmployeeATID).ToList();
+>>>>>>> ver2
+                        if(listWorkingInfo!= null && listWorkingInfo.Count() ==1){
+                            IC_WorkingInfo newWorking = new IC_WorkingInfo();
+                            newWorking.CompanyIndex = user.CompanyIndex;
+                            newWorking.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0');
+                            newWorking.DepartmentIndex = 0;
+                            newWorking.ApprovedDate = DateTime.Now;
+                            newWorking.ApprovedUser = user.UserName;
+                            newWorking.FromDate = DateTime.Now;
+                            newWorking.IsManager = false;
+<<<<<<< HEAD
+                            newWorking.UpdatedUser = user.FullName;
+                            newWorking.Status = (short)TransferStatus.Approve;
+=======
+                            newWorking.UpdatedUser = user.UserName;
+                            newWorking.Status = (short)GlobalParams.TransferStatus.Approve;
+>>>>>>> ver2
+                            newWorking.IsSync = true;
+                            context.IC_WorkingInfo.Add(newWorking);
+                        }
+                    }
+
+                }
+            }
+
+            // 2  Add Notification to send to requester 
+            List<IC_UserNotificationDTO> listUserNotify = new List<IC_UserNotificationDTO>();
+            var listCountEmployee = lsparam.GroupBy(u => new { u.CompanyIndex, u.NewDepartment }).Select(c => new { c.Key, Count = c.Count() }).ToList();
+            foreach (var employee in listCountEmployee)
+            {
+                addedParams = new List<AddedParam>();
+                addedParams.Add(new AddedParam { Key = "CompanyIndex", Value = user.CompanyIndex });
+                addedParams.Add(new AddedParam { Key = "DepartmentIndex", Value = employee.Key.NewDepartment });
+                listUserNotify.AddRange(_iIC_UserNotificationLogic.GetListUserNotify(addedParams));
+
+                foreach (var item in listUserNotify)
+                {
+                    item.Status = 0;
+                    item.Type = lsparam[0].Status; // 0 is submit , 1 is approve, 2 is reject
+                    item.Message = JsonConvert.SerializeObject(new MessageBodyDTO
+                    {
+                        Message = employee.Count.ToString(),
+                        ApproveDate = DateTime.Now,
+                        Approver = user.UserName,
+                    });
+                }
+            }
+
+            _iIC_UserNotificationLogic.CreateList(listUserNotify);
+            context.SaveChanges();
+
+            //3. Rebase working fromdate and todate info after save approve working info
+            foreach (var item in lsparam)
+            {
+                if (!item.TemporaryTransfer)
+                {
+                    _iIC_WorkingInfoLogic.ReBaseWorkingInfo(item.EmployeeATID, item.CompanyIndex);
+                }
+            }
+
+            //4. Create command sync to device
+            if (lsparam[0].TransferNow)
+            {
+                _iIC_CommandLogic.TransferUser(lsparam);
+            }
+
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_EmployeeTransfer";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Modified;
+            audit.Description = AuditType.Modified.ToString() + " Apparove or reject Employee " + lsparam.Count().ToString();
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("UpdateEmployeeTransferNew")]
+        [HttpPost]
+        public IActionResult UpdateEmployeeTransferNew([FromBody] List<EmployeesTransfer> lsparam)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ConfigObject config = ConfigObject.GetConfig(cache);
+            IActionResult result = Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+
+            lsparam[0] = (EmployeesTransfer)Misc.RemoveWhiteSpace(lsparam[0]);
+
+            IC_EmployeeTransfer checkUpdateData = context.IC_EmployeeTransfer
+                .Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == lsparam[0].EmployeeATID
+                && t.FromTime == lsparam[0].FromTime && t.NewDepartment == lsparam[0].NewDepartment).FirstOrDefault();
+            int OldDepartment = checkUpdateData.OldDepartment.Value;
+            if (checkUpdateData != null)
+            {
+                if (checkUpdateData.IsSync)
+                {
+                    return BadRequest("IsSynced");
+                }
+
+                //check fromtime and totime có tồn tài trong khoảng thời gian nhân viên được điều chuyển không
+                var checkDataTime = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+                && t.EmployeeATID == lsparam[0].EmployeeATID &&
+               lsparam[1].FromTime <= t.ToTime && lsparam[1].ToTime >= t.FromTime).ToList();
+
+                if (checkDataTime != null && checkDataTime.Count > 1)
+                {
+                    return BadRequest("TimeExists");
+                }
+                else if (checkDataTime != null && checkDataTime.Count == 1)
+                {
+                    if (checkUpdateData == checkDataTime.FirstOrDefault())
+                    {
+                        context.IC_EmployeeTransfer.Remove(checkUpdateData);
+                        IC_EmployeeTransfer updateData = new IC_EmployeeTransfer();
+                        updateData.EmployeeATID = lsparam[1].EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID,'0');
+                        updateData.CompanyIndex = user.CompanyIndex;
+                        updateData.ToTime = lsparam[1].ToTime;
+                        updateData.FromTime = lsparam[1].FromTime;
+                        updateData.IsSync = false;
+                        updateData.Description = lsparam[1].Description;
+                        updateData.CreatedDate = DateTime.Now;
+                        updateData.UpdatedDate = DateTime.Now;
+                        updateData.UpdatedUser = user.UserName;
+                        updateData.OldDepartment = OldDepartment;
+                        updateData.NewDepartment = lsparam[1].NewDepartment;
+                        updateData.AddOnNewDepartment = lsparam[1].AddOnNewDepartment;
+                        updateData.RemoveFromOldDepartment = lsparam[1].RemoveFromOldDepartment;
+                        context.Add(updateData);
+                    }
+                    else
+                    {
+                        return BadRequest("TimeExists");
+                    }
+                }
+                else
+                {
+                    context.IC_EmployeeTransfer.Remove(checkUpdateData);
+
+                    IC_EmployeeTransfer updateData = new IC_EmployeeTransfer();
+                    updateData.EmployeeATID = lsparam[1].EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                    updateData.CompanyIndex = user.CompanyIndex;
+                    updateData.ToTime = lsparam[1].ToTime;
+                    updateData.FromTime = lsparam[1].FromTime;
+                    updateData.IsSync = false;
+                    updateData.Description = lsparam[1].Description;
+                    updateData.CreatedDate = DateTime.Now;
+                    updateData.UpdatedDate = DateTime.Now;
+                    updateData.UpdatedUser = user.UserName;
+                    updateData.OldDepartment = OldDepartment;
+                    updateData.NewDepartment = lsparam[1].NewDepartment;
+                    updateData.AddOnNewDepartment = lsparam[1].AddOnNewDepartment;
+                    updateData.RemoveFromOldDepartment = lsparam[1].RemoveFromOldDepartment;
+                    context.Add(updateData);
+                }
+
+
+            }
+
+            context.SaveChanges();
+            // Add audit log
+            IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+            audit.TableName = "IC_EmployeeTransfer";
+            audit.UserName = user.UserName;
+            audit.CompanyIndex = user.CompanyIndex;
+            audit.State = AuditType.Modified;
+            audit.Description = AuditType.Modified.ToString() + " Employee " + lsparam.Count().ToString();
+            audit.DateTime = DateTime.Now;
+            _iIC_AuditLogic.Create(audit);
+            result = Ok();
+            return result;
+        }
+
+        [Authorize]
+        [ActionName("AddEmployeeTransferFromExcel")]
+        [HttpPost]
+        public ActionResult<string> AddEmployeeTransferFromExcel([FromBody] List<EmployeesTransferImportExcel> lsparam)
+        {
+            UserInfo user = UserInfo.GetFromCache(cache, User.Identity.Name);
+            ActionResult result = Unauthorized();
+            bool checkTimeExist = false;
+            int departmentIndex = 0;
+            if (user == null)
+            {
+                return Unauthorized(PublicFunctions.CreateHttpErrorContent("TokenExpired"));
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            DateTime _fromTime = DateTime.Now;
+            DateTime _toTime = DateTime.Now;
+            foreach (var param in lsparam)
+            {
+                try
+                {
+                    _fromTime = DateTime.ParseExact(param.FromTime, "dd/MM/yyyy", null);
+                    _toTime = DateTime.ParseExact(param.ToTime, "dd/MM/yyyy", null);
+                    if (_fromTime > _toTime)
+                    {
+                        stringBuilder.Append(param.EmployeeATID + ":" + "Lỗi thời gian ngày chuyển đi lớn hơn ngày trở lại").AppendLine();
+                        continue;
+                        //return BadRequest("TimeErrorFromExcel");
+                    }
+                }
+                catch
+                {
+                    stringBuilder.Append(param.EmployeeATID + ":" + "Định dạng sai thời gian").AppendLine();
+                    continue;
+                    //return BadRequest("TimeErrorFromExcel");
+                }
+
+                //param = (EmployeesTransferImportExcel)PublicFunctions.RemoveWhiteSpace(param);
+                if (param.EmployeeATID == "")
+                {
+                    return BadRequest("PleaseFillAllRequiredFields");
+                }
+
+                // Check thời gian khi nhân viên điều chuyển phòng ban
+
+                //var lsTimeParam = GetDates(_fromTime, _toTime);
+
+                //var checkUpdateData = context.IC_EmployeeTransfer
+                //              .Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID)
+                //              .Select(t => new { t.FromTime, t.ToTime }).ToList();
+
+                //if (checkUpdateData != null && checkUpdateData.Count > 0)
+                //{
+                //    foreach (var item in checkUpdateData)
+                //    {
+                //        checkTimeExist = lsTimeParam.Any(GetDates(item.FromTime, item.ToTime).Contains);
+
+                //        if (checkTimeExist)
+                //        {
+                //            stringBuilder.Append(param.EmployeeATID + ":" + "Thông tin điều chuyển đã tồn tại trong khoảng thời gian này").AppendLine();
+                //            continue;
+                //            //return BadRequest("TimeExists");
+                //        }
+                //    }
+                //}
+                var checkDataTime = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+                       && t.EmployeeATID == param.EmployeeATID &&
+                      _fromTime <= t.ToTime && _toTime >= t.FromTime).ToList();
+
+                if (checkDataTime != null && checkDataTime.Count > 0)
+                {
+                    stringBuilder.Append(param.EmployeeATID + ":" + "Thông tin điều chuyển đã tồn tại trong khoảng thời gian này").AppendLine();
+                    continue;
+                    //return BadRequest("TimeExists");
+                }
+                IC_EmployeeTransfer checkData = context.IC_EmployeeTransfer.Where(t => t.CompanyIndex == user.CompanyIndex
+                && t.EmployeeATID == param.EmployeeATID &&
+                t.FromTime <= _fromTime && t.ToTime >= _toTime).FirstOrDefault();
+                if (checkData != null)
+                {
+                    stringBuilder.Append(param.EmployeeATID + ":" + "Phòng ban điều chuyển đã tồn tại").AppendLine();
+                    continue;
+                    //return Conflict("EmployeeTransferIsExist");
+                }
+
+                if (param.NewDepartmentName.Contains(@"/") && string.IsNullOrEmpty(param.NewDepartmentName) == false)
+                {
+
+                    var value = param.NewDepartmentName.Split('/');
+                    var dpParent = value[0];
+                    var dpchildren = value[1];
+
+                    var dpIndexTemp = (from dp in context.IC_Department
+                                       join dpp in context.IC_Department on dp.ParentIndex equals dpp.Index
+                                       where (dp.Name == dpchildren && dpp.Name == dpParent)
+                                       select new { dp.Index }).Select(t => t.Index);
+                    if (dpIndexTemp.Any())
+                    {
+                        departmentIndex = dpIndexTemp.First();
+                    }
+                    else
+                    {
+                        departmentIndex = 0;
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(param.NewDepartmentName) == false)
+                    {
+                        departmentIndex = Convert.ToInt32(context.IC_Department.Where(t => t.Name.Equals(param.NewDepartmentName)).Select(t => t.Index).FirstOrDefault());
+                    }
+                    else
+                    {
+                        departmentIndex = 0;
+                    }
+                }
+                IC_Employee employee = context.IC_Employee.Where(t => t.CompanyIndex == user.CompanyIndex && t.EmployeeATID == param.EmployeeATID).FirstOrDefault();
+                if (employee != null)
+                {
+                    IC_EmployeeTransfer empTranfer = new IC_EmployeeTransfer();
+                    empTranfer.EmployeeATID = param.EmployeeATID.PadLeft(config.MaxLenghtEmployeeATID, '0');
+                    empTranfer.CompanyIndex = user.CompanyIndex;
+                    empTranfer.ToTime = _toTime;
+                    empTranfer.FromTime = _fromTime;
+                    empTranfer.IsSync = false;
+                    empTranfer.Description = param.Description;
+                    empTranfer.CreatedDate = DateTime.Now;
+                    empTranfer.UpdatedDate = DateTime.Now;
+                    empTranfer.UpdatedUser = user.UserName;
+                    empTranfer.NewDepartment = departmentIndex;
+                    empTranfer.OldDepartment = employee.DepartmentIndex;
+                    empTranfer.AddOnNewDepartment = param.AddOnNewDepartment;
+                    empTranfer.RemoveFromOldDepartment = param.RemoveFromOldDepartment;
+                    context.IC_EmployeeTransfer.Add(empTranfer);
+                }
+                else
+                {
+                    stringBuilder.Append(param.EmployeeATID + ":" + "Nhân viên không tồn tại").AppendLine();
+                    continue;
+                }
+            }
+
+            if (string.IsNullOrEmpty(stringBuilder.ToString()))
+            {
+                context.SaveChanges();
+                // Add audit log
+                IC_AuditEntryDTO audit = new IC_AuditEntryDTO(null);
+                audit.TableName = "IC_EmployeeTransfer";
+                audit.UserName = user.UserName;
+                audit.CompanyIndex = user.CompanyIndex;
+                audit.State = AuditType.Added;
+                audit.Description = AuditType.Added.ToString() + " Transfer Employee from Excel " + lsparam.Count().ToString();
+                audit.DateTime = DateTime.Now;
+                _iIC_AuditLogic.Create(audit);
+                result = Ok("Thêm nhân viên điều chuyển thành công");
+            }
+            else
+            {
+                result = Ok(stringBuilder.ToString());
+            }
+            return result;
+        }
+
+        [NonAction]
+        public static List<DateTime> GetDates(DateTime fromTime, DateTime toTime)
+        {
+            return Enumerable.Range(0, 1 + toTime.Subtract(fromTime).Days).Select(offset => fromTime.AddDays(offset)).ToList(); // Load dates into a list
+        }
+
+        public class EmployeeTransferParam
+        {
+            public string EmployeeATID { get; set; }
+
+            public int NewDepartment { get; set; }
+
+            public DateTime FromTime { get; set; }
+
+            public int CompanyIndex { get; set; }
+
+            public int? OldDepartment { get; set; }
+
+            public bool RemoveFromOldDepartment { get; set; }
+
+            public bool AddOnNewDepartment { get; set; }
+
+            public DateTime? ToTime { get; set; }
+
+            public bool IsSync { get; set; }
+
+            public string Description { get; set; }
+
+            public DateTime? CreatedDate { get; set; }
+
+            public DateTime? UpdatedDate { get; set; }
+
+            public string UpdatedUser { get; set; }
+            public bool TemporaryTransfer { get; set; }
+
+            public short Status { get; set; }
+        }
+
+        public class EmployeesTransferParam
+        {
+            public List<string> ArrEmployeeATID { get; set; }
+            public string EmployeeATID { get; set; }
+
+            public int NewDepartment { get; set; }
+
+            public DateTime FromTime { get; set; }
+
+            public int? OldDepartment { get; set; }
+
+            public bool RemoveFromOldDepartment { get; set; }
+
+            public bool AddOnNewDepartment { get; set; }
+
+            public DateTime? ToTime { get; set; }
+
+            public bool IsSync { get; set; }
+
+            public string Description { get; set; }
+
+            public DateTime? CreatedDate { get; set; }
+
+            public DateTime? UpdatedDate { get; set; }
+
+            public string UpdatedUser { get; set; }
+
+            public bool TemporaryTransfer { get; set; }
+
+            public short Status { get; set; }
+        }
+
+        public class EmployeesTransferImportExcel
+        {
+            public string EmployeeATID { get; set; }
+
+            public string NewDepartmentName { get; set; }
+
+            public string FromTime { get; set; }
+            public string ToTime { get; set; }
+
+
+            public bool RemoveFromOldDepartment { get; set; }
+
+            public bool AddOnNewDepartment { get; set; }
+
+
+            public string Description { get; set; }
+        }
+
+        public class EmployeesTransfer
+        {
+            public string EmployeeATID { get; set; }
+            public int NewDepartment { get; set; }
+            public DateTime FromTime { get; set; }
+            public DateTime ToTime { get; set; }
+            public string IsFromTime { get; set; }
+            public string IsToTime { get; set; }
+            public int OldDepartment { get; set; }
+            public bool RemoveFromOldDepartment { get; set; }
+            public bool AddOnNewDepartment { get; set; }
+            public bool? IsSync { get; set; }
+            public string Description { get; set; }
+        }
+
+        public class EmployeesTransferGrid
+        {
+            public string EmployeeATID { get; set; }
+            public string FullName { get; set; }
+            public string IsFromTime { get; set; }
+            public string IsToTime { get; set; }
+            public DateTime? FromTime { get; set; }
+            public DateTime? ToTime { get; set; }
+            public string Description { get; set; }
+            public int NewDepartment { get; set; }
+            public string NewDepartmentName { get; set; }
+            public int? OldDepartment { get; set; }
+            public string OldDepartmentName { get; set; }
+            public string RemoveFromOldDepartmentName { get; set; }
+            public bool? RemoveFromOldDepartment { get; set; }
+            public bool? AddOnNewDepartment { get; set; }
+            public string AddOnNewDepartmentName { get; set; }
+            public string TypeTemporaryTransfer { get; set; }
+            public string TransferApprovedDate { get; set; }
+            public string TransferApprovedUser { get; set; }
+            public short Status { get; set; }
+            public bool TemporaryTransfer { get; set; }
+        }
+
+        public class WaitingApproveResult
+        {
+            public int Index { get; set; }
+            public string EmployeeATID { get; set; }
+            public int CompanyIndex { get; set; }
+            public DateTime FromDate { get; set; }
+            public int NewDepartmentIndex { get; set; }
+            public short Type { get; set; }
+
+            public string EmployeeName { get; set; }
+            public string NewDepartment { get; set; }
+            public string OldDepartment { get; set; }
+            public DateTime? ToDate { get; set; }
+            public string SuggestUser { get; set; }
+            public DateTime? SuggestDate { get; set; }
+            public bool IsChecked { get; set; }
+            public WaitingApproveResult()
+            {
+                IsChecked = false;
+            }
+        }
+
+    }
+}

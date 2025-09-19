@@ -1,0 +1,22 @@
+{
+    "ReportDomain": "http://epad.ezhrsolution.com",
+    "Port": 6105,
+    "Api": "reports/api/v2.0",
+    "View": "ReportServer/Pages/ReportViewer.aspx",
+    "Path": "",
+    "Folder": "Epadreport",
+    "Auth": {
+        "username": "admin",
+        "password": "admin"
+    },
+    "ViewOption": {
+        "rs:Command": "Render",
+        "rs:ClearSession": "True",
+        "rs:Embed": "True",
+        "rs:Format": "HTML5",
+        "rs:ParameterLanguage": "en-US",
+        "rc:Toolbar": "True",
+        "rc:Parameters": "False",
+        "rc:Zoom": "Page Width"
+    }
+}
